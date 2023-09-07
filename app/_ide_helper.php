@@ -17698,6 +17698,127 @@
         }
          
     }
+            /**
+     * 
+     *
+     * @method static void createSubscription(array|string $channels, \Closure $callback, string $method = 'subscribe')
+     * @method static \Illuminate\Redis\Limiters\ConcurrencyLimiterBuilder funnel(string $name)
+     * @method static \Illuminate\Redis\Limiters\DurationLimiterBuilder throttle(string $name)
+     * @method static mixed client()
+     * @method static void subscribe(array|string $channels, \Closure $callback)
+     * @method static void psubscribe(array|string $channels, \Closure $callback)
+     * @method static mixed command(string $method, array $parameters = [])
+     * @method static void listen(\Closure $callback)
+     * @method static string|null getName()
+     * @method static \Illuminate\Redis\Connections\Connection setName(string $name)
+     * @method static \Illuminate\Contracts\Events\Dispatcher getEventDispatcher()
+     * @method static void setEventDispatcher(\Illuminate\Contracts\Events\Dispatcher $events)
+     * @method static void unsetEventDispatcher()
+     * @method static void macro(string $name, object|callable $macro)
+     * @method static void mixin(object $mixin, bool $replace = true)
+     * @method static bool hasMacro(string $name)
+     * @method static void flushMacros()
+     * @method static mixed macroCall(string $method, array $parameters)
+     * @see \Illuminate\Redis\RedisManager
+     */ 
+        class Redis {
+                    /**
+         * Get a Redis connection by name.
+         *
+         * @param string|null $name
+         * @return \Illuminate\Redis\Connections\Connection 
+         * @static 
+         */ 
+        public static function connection($name = null)
+        {
+                        /** @var \Illuminate\Redis\RedisManager $instance */
+                        return $instance->connection($name);
+        }
+                    /**
+         * Resolve the given connection by name.
+         *
+         * @param string|null $name
+         * @return \Illuminate\Redis\Connections\Connection 
+         * @throws \InvalidArgumentException
+         * @static 
+         */ 
+        public static function resolve($name = null)
+        {
+                        /** @var \Illuminate\Redis\RedisManager $instance */
+                        return $instance->resolve($name);
+        }
+                    /**
+         * Return all of the created connections.
+         *
+         * @return array 
+         * @static 
+         */ 
+        public static function connections()
+        {
+                        /** @var \Illuminate\Redis\RedisManager $instance */
+                        return $instance->connections();
+        }
+                    /**
+         * Enable the firing of Redis command events.
+         *
+         * @return void 
+         * @static 
+         */ 
+        public static function enableEvents()
+        {
+                        /** @var \Illuminate\Redis\RedisManager $instance */
+                        $instance->enableEvents();
+        }
+                    /**
+         * Disable the firing of Redis command events.
+         *
+         * @return void 
+         * @static 
+         */ 
+        public static function disableEvents()
+        {
+                        /** @var \Illuminate\Redis\RedisManager $instance */
+                        $instance->disableEvents();
+        }
+                    /**
+         * Set the default driver.
+         *
+         * @param string $driver
+         * @return void 
+         * @static 
+         */ 
+        public static function setDriver($driver)
+        {
+                        /** @var \Illuminate\Redis\RedisManager $instance */
+                        $instance->setDriver($driver);
+        }
+                    /**
+         * Disconnect the given connection and remove from local cache.
+         *
+         * @param string|null $name
+         * @return void 
+         * @static 
+         */ 
+        public static function purge($name = null)
+        {
+                        /** @var \Illuminate\Redis\RedisManager $instance */
+                        $instance->purge($name);
+        }
+                    /**
+         * Register a custom driver creator Closure.
+         *
+         * @param string $driver
+         * @param \Closure $callback
+         * @return \Illuminate\Redis\RedisManager 
+         * @static 
+         */ 
+        public static function extend($driver, $callback)
+        {
+                        /** @var \Illuminate\Redis\RedisManager $instance */
+                        return $instance->extend($driver, $callback);
+        }
+         
+    }
      
 }
 
@@ -22107,6 +22228,7 @@ namespace  {
             class Validator extends \Illuminate\Support\Facades\Validator {}
             class View extends \Illuminate\Support\Facades\View {}
             class Vite extends \Illuminate\Support\Facades\Vite {}
+            class Redis extends \Illuminate\Support\Facades\Redis {}
             class Flare extends \Spatie\LaravelIgnition\Facades\Flare {}
      
 }
