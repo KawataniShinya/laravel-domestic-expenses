@@ -16,7 +16,7 @@ class MemberCategorySeeder extends Seeder
      */
     public function run()
     {
-        DB::table('member_category')->insert([
+        DB::table('member_categories')->insert([
             [
                 'member_id' => 1,
                 'category_id' => 1,

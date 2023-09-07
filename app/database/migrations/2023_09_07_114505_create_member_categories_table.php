@@ -13,8 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('member_category', function (Blueprint $table) {
-            $table->id('member_category_id')->comment('メンバー別収支分類ID');
+        Schema::create('member_categories', function (Blueprint $table) {
+            $table->id('member_categories_id')->comment('メンバー別収支分類ID');
             $table->bigInteger('member_id')->unsigned()->nullable()->comment('メンバーID');
             $table->bigInteger('category_id')->unsigned()->nullable()->comment('収支分類ID');
             $table->boolean('del_flg')->default(false)->comment('削除フラグ');
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('member_category');
+        Schema::dropIfExists('member_categories');
     }
 };
