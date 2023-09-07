@@ -18,10 +18,18 @@ class GroupSeeder extends Seeder
     public function run()
     {
         DB::table('groups')->insert([
-            'group_name' => 'MyGroup',
-            'del_flg' => 0,
-            'created_at' => new DateTime(),
-            'updated_at' => new DateTime(),
+            [
+                'group_name' => 'MyGroup',
+                'del_flg' => 0,
+                'created_at' => new DateTime(),
+                'updated_at' => new DateTime(),
+            ],
+            [
+                'group_name' => 'テストグループ',
+                'del_flg' => 0,
+                'created_at' => new DateTime(),
+                'updated_at' => new DateTime(),
+            ]
         ]);
     }
 }
