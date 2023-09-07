@@ -14,10 +14,12 @@ return new class extends Migration
     public function up()
     {
         Schema::create('groups', function (Blueprint $table) {
-            $table->id('group_id');
-            $table->string('group_name');
-            $table->boolean('del_flg')->default(false);
+            $table->id('group_id')->comment('グループID');
+            $table->string('group_name')->comment('グループ名');
+            $table->boolean('del_flg')->default(false)->comment('削除フラグ');
             $table->timestamps();
+
+            $table->comment('グループ');
         });
     }
 

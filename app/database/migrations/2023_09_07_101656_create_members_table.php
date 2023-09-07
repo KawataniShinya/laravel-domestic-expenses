@@ -14,12 +14,14 @@ return new class extends Migration
     public function up()
     {
         Schema::create('members', function (Blueprint $table) {
-            $table->id('member_id');
-            $table->bigInteger('user_id')->unsigned()->nullable();
-            $table->bigInteger('group_id')->unsigned()->nullable();
-            $table->string('member_name');
-            $table->boolean('del_flg')->default(false);
+            $table->id('member_id')->comment('メンバーID');
+            $table->bigInteger('user_id')->unsigned()->nullable()->comment('ユーザーID');
+            $table->bigInteger('group_id')->unsigned()->nullable()->comment('グループID');
+            $table->string('member_name')->comment('メンバー名');
+            $table->boolean('del_flg')->default(false)->comment('削除フラグ');
             $table->timestamps();
+
+            $table->comment('メンバー');
         });
     }
 
