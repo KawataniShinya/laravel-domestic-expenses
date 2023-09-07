@@ -23,6 +23,7 @@ return new class extends Migration
             $table->boolean('del_flg')->default(false)->comment('削除フラグ');
             $table->timestamps();
 
+            $table->unique(['summary_ym', 'group_id', 'member_id']);
             $table->comment('メンバー履歴');
         });
     }
