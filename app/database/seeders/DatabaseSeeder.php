@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             GroupSeeder::class,
             MemberSeeder::class,
             CategorySeeder::class,
+            MemberCategorySeeder::class,
         ]);
     }
 }
