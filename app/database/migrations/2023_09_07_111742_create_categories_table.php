@@ -15,8 +15,8 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id('category_id')->comment('収支分類ID');
-            $table->bigInteger('group_id')->unsigned()->nullable()->comment('グループID');
-            $table->bigInteger('display_order')->unsigned()->nullable()->comment('グループ別表示順');
+            $table->bigInteger('group_id')->unsigned()->comment('グループID');
+            $table->bigInteger('display_order')->unsigned()->comment('グループ別表示順');
             $table->string('category_name')->comment('収支分類名');
             $table->boolean('del_flg')->default(false)->comment('削除フラグ');
             $table->timestamps();

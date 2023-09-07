@@ -16,9 +16,9 @@ return new class extends Migration
         Schema::create('member_histories', function (Blueprint $table) {
             $table->id('member_history_id')->comment('メンバー履歴ID');
             $table->integer('summary_ym')->comment('集計年月');
-            $table->bigInteger('group_id')->unsigned()->nullable()->comment('グループID');
+            $table->bigInteger('group_id')->unsigned()->comment('グループID');
             $table->string('group_name')->comment('グループ名');
-            $table->bigInteger('member_id')->unsigned()->nullable()->comment('メンバーID');
+            $table->bigInteger('member_id')->unsigned()->comment('メンバーID');
             $table->string('member_name')->comment('メンバー名');
             $table->boolean('del_flg')->default(false)->comment('削除フラグ');
             $table->timestamps();
