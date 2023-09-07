@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('groups', function (Blueprint $table) {
             $table->id('group_id');
-            $table->string('group_name')->nullable();
+            $table->string('group_name');
             $table->boolean('del_flg')->default(false);
             $table->timestamps();
         });
