@@ -23,7 +23,7 @@ return new class extends Migration
             $table->bigInteger('categorized_payment_id')->unsigned()->nullable()->comment('収支分類別明細ID');
             $table->date('payment_date')->nullable()->comment('発生日付');
             $table->bigInteger('amount')->comment('金額');
-            $table->string('payment_label')->comment('収支名目');
+            $table->string('payment_label')->nullable()->comment('収支名目');
             $table->boolean('del_flg')->default(false)->comment('削除フラグ');
             $table->timestamps();
 

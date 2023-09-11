@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             MemberSeeder::class,
             CategorySeeder::class,
             MemberCategorySeeder::class,
+            PaymentSeeder::class,
         ]);
     }
 }
