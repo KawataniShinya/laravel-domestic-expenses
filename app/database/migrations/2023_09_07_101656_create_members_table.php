@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('members', function (Blueprint $table) {
             $table->id('member_id')->comment('メンバーID');
-            $table->bigInteger('user_id')->unsigned()->nullable()->comment('ユーザーID');
+            $table->string('email')->nullable()->comment('メールアドレス');
             $table->bigInteger('group_id')->unsigned()->nullable()->comment('グループID');
             $table->string('member_name')->comment('メンバー名');
             $table->boolean('del_flg')->default(false)->comment('削除フラグ');

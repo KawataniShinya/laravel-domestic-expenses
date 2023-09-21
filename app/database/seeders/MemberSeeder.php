@@ -18,7 +18,7 @@ class MemberSeeder extends Seeder
     {
         DB::table('members')->insert([
             [
-                'user_id' => 1,
+                'email' => 'test@test.com',
                 'group_id' => 1,
                 'member_name' => 'メンバーA',
                 'del_flg' => 0,
@@ -26,7 +26,7 @@ class MemberSeeder extends Seeder
                 'updated_at' => new DateTime(),
             ],
             [
-                'user_id' => null,
+                'email' => null,
                 'group_id' => 1,
                 'member_name' => 'メンバーB',
                 'del_flg' => 0,
@@ -34,7 +34,7 @@ class MemberSeeder extends Seeder
                 'updated_at' => new DateTime(),
             ],
             [
-                'user_id' => null,
+                'email' => null,
                 'group_id' => 1,
                 'member_name' => '共同口座',
                 'del_flg' => 0,
@@ -42,7 +42,7 @@ class MemberSeeder extends Seeder
                 'updated_at' => new DateTime(),
             ],
             [
-                'user_id' => null,
+                'email' => null,
                 'group_id' => 2,
                 'member_name' => 'メンバーC',
                 'del_flg' => 0,
@@ -50,7 +50,7 @@ class MemberSeeder extends Seeder
                 'updated_at' => new DateTime(),
             ],
             [
-                'user_id' => null,
+                'email' => null,
                 'group_id' => null,
                 'member_name' => 'メンバーD',
                 'del_flg' => 0,
