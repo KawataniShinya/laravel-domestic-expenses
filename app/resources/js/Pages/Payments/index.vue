@@ -11,9 +11,9 @@ onMounted(() => {
     props.payments.forEach(payment => {
         paymentList.value.push({
             summary_ym: payment.summary_ym,
-            income: payment.income,
-            expense: payment.expense,
-            total: payment.total
+            income: Number(payment.income),
+            expense: Number(payment.expense),
+            total: Number(payment.total)
         })
     })
 })
@@ -55,9 +55,9 @@ const paymentList = ref([])
                                         <tbody>
                                         <tr v-for="payment in paymentList" :key="payment.summary_ym">
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3">{{ payment.summary_ym }}</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ payment.income }}</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ payment.expense }}</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-lg text-gray-900 text-end">{{ payment.total }}</td>
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ payment.income.toLocaleString() }}</td>
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ payment.expense.toLocaleString() }}</td>
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-lg text-gray-900 text-end">{{ payment.total.toLocaleString() }}</td>
                                             <td class="border-t-2 border-b-2 border-gray-200 text-center">
                                                 <button class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded">編集</button>
                                             </td>
