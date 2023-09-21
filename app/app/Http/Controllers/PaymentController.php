@@ -16,7 +16,21 @@ class PaymentController extends Controller
      */
     public function index()
     {
-        return Inertia::render('Payments/index');
+        $payments = Payment::where('group_id', 1)
+            ->groupBy('summary_ym')
+            ->selectRaw('
+                    summary_ym,
+                    sum(case when income_flg=1 then amount else 0 end) as income,
+                    sum(case when income_flg=0 then amount else 0 end) as expense,
+                    sum(case when income_flg=1 then amount else amount * (-1) end) as total
+                ')
+            ->get();
+        return Inertia::render(
+            'Payments/index',
+            [
+                'payments' => $payments
+            ]
+        );
     }
 
     /**

@@ -1,6 +1,24 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
+import { onMounted, ref } from 'vue'
+
+const props = defineProps({
+    'payments' : Array
+})
+
+onMounted(() => {
+    props.payments.forEach(payment => {
+        paymentList.value.push({
+            summary_ym: payment.summary_ym,
+            income: payment.income,
+            expense: payment.expense,
+            total: payment.total
+        })
+    })
+})
+
+const paymentList = ref([])
 </script>
 
 <template>
@@ -35,20 +53,11 @@ import { Head } from '@inertiajs/vue3';
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        <tr>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3">202308</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">300,000</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">250,000</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-lg text-gray-900 text-end">50,000</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 text-center">
-                                                <button class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded">編集</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3">202307</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">310,000</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">240,000</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-lg text-gray-900 text-end">70,000</td>
+                                        <tr v-for="payment in paymentList" :key="payment.summary_ym">
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3">{{ payment.summary_ym }}</td>
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ payment.income }}</td>
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ payment.expense }}</td>
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-lg text-gray-900 text-end">{{ payment.total }}</td>
                                             <td class="border-t-2 border-b-2 border-gray-200 text-center">
                                                 <button class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded">編集</button>
                                             </td>
