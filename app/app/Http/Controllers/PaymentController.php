@@ -24,6 +24,7 @@ class PaymentController extends Controller
                     sum(case when income_flg=0 then amount else 0 end) as expense,
                     sum(case when income_flg=1 then amount else amount * (-1) end) as total
                 ')
+            ->orderBy('summary_ym', 'desc')
             ->get();
         return Inertia::render(
             'Payments/index',
