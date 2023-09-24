@@ -74,10 +74,10 @@ class PaymentController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  string  $sumary_ym
+     * @param  string  $summary_ym
      * @return \Illuminate\Http\Response
      */
-    public function showSummary(string $sumary_ym)
+    public function showSummary(string $summary_ym)
     {
         return to_route('dashboard');
     }
