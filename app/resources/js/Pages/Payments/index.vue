@@ -1,7 +1,9 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
-import { onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue';
+import Datepicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css'
 
 const props = defineProps({
     'payments' : Array
@@ -19,6 +21,19 @@ onMounted(() => {
 })
 
 const paymentList = ref([])
+
+const currentDate = new Date()
+onMounted(() => {
+    createDate.year = currentDate.getFullYear()
+    createDate.month = currentDate.getMonth()
+})
+const createDate = ref({
+    'year' : currentDate.getFullYear(),
+    'month' : currentDate.getMonth()
+})
+const format = args => {
+    return `${args.getFullYear()}年${args.getMonth() + 1}月`
+}
 </script>
 
 <template>
@@ -36,9 +51,13 @@ const paymentList = ref([])
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
                         <section class="text-gray-900 body-font">
-                            <div class="container px-5 py-24 mx-auto">
+                            <div class="container px-5 py-24 mx-auto" style="min-height:500px;">
                                 <div class="flex pl-4 mb-4 ml-auto max-w-sm ">
-                                    <input type="text" id="name" name="name" class="mx-auto bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
+                                    <v-row justify="center">
+                                        <v-card width="500" height="80" class="mt-16 pa-5">
+                                            <Datepicker v-model="createDate" :format="format" monthPicker />
+                                        </v-card>
+                                    </v-row>
                                     <button class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded">新規作成</button>
                                 </div>
                                 <div class="w-full mx-auto overflow-auto">
@@ -49,7 +68,7 @@ const paymentList = ref([])
                                             <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">収入額</th>
                                             <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">支出額</th>
                                             <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">収支合計</th>
-                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">編集</th>
+                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">内訳</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -59,7 +78,7 @@ const paymentList = ref([])
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ payment.expense.toLocaleString() }}</td>
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-lg text-gray-900 text-end">{{ payment.total.toLocaleString() }}</td>
                                             <td class="border-t-2 border-b-2 border-gray-200 text-center">
-                                                <button class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded">編集</button>
+                                                <button class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded">内訳</button>
                                             </td>
                                         </tr>
                                         </tbody>
