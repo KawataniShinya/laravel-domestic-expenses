@@ -43,6 +43,7 @@ services:
     expose:
       - "80"
     environment:
+      VIRTUAL_TIMEOUT: 1800 # タイムアウト30分
       VIRTUAL_HOST: localhost.app.sample.jp
     volumes:
       - ./app:/var/www/app
@@ -79,7 +80,7 @@ services:
       dockerfile: Dockerfile
     container_name: nginx-proxy
     environment:
-      VIRTUAL_TIMEOUT: 60 # タイムアウト1分
+      VIRTUAL_TIMEOUT: 1800 # タイムアウト30分
     ports:
       - '80:80'
     volumes:
