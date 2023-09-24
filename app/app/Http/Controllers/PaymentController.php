@@ -72,6 +72,17 @@ class PaymentController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     *
+     * @param  string  $sumary_ym
+     * @return \Illuminate\Http\Response
+     */
+    public function showSummary(string $sumary_ym)
+    {
+        return to_route('dashboard');
+    }
+
+    /**
      * Show the form for editing the specified resource.
      *
      * @param  \App\Models\Payment  $payment

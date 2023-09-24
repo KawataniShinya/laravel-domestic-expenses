@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
 import Datepicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
@@ -78,7 +78,7 @@ const format = args => {
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ payment.expense.toLocaleString() }}</td>
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-lg text-gray-900 text-end">{{ payment.total.toLocaleString() }}</td>
                                             <td class="border-t-2 border-b-2 border-gray-200 text-center">
-                                                <button class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded">内訳</button>
+                                                <Link class="mx-auto text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded" :href="route('payment.showSummary', { summary_ym: payment.summary_ym })">内訳</Link>
                                             </td>
                                         </tr>
                                         </tbody>
