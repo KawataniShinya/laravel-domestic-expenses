@@ -26,6 +26,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Member whereMemberName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Member whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Member whereUserId($value)
+ * @property string|null $email メールアドレス
+ * @method static \Illuminate\Database\Eloquent\Builder|Member whereEmail($value)
  * @mixin \Eloquent
  */
 class Member extends Model

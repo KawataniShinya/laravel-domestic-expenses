@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('summary_ym')->comment('集計年月');
             $table->bigInteger('member_id')->unsigned()->comment('メンバーID');
             $table->bigInteger('category_id')->unsigned()->comment('収支分類ID');
+            $table->string('category_name')->comment('収支分類名');
             $table->boolean('del_flg')->default(false)->comment('削除フラグ');
             $table->timestamps();
 

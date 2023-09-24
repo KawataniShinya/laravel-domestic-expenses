@@ -26,6 +26,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereMemberId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereSummaryYm($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereUpdatedAt($value)
+ * @property string $category_name 収支分類名
+ * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereCategoryName($value)
  * @mixin \Eloquent
  */
 class MemberCategoryHistory extends Model

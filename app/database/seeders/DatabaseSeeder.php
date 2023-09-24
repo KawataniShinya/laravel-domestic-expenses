@@ -21,6 +21,8 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             MemberCategorySeeder::class,
             PaymentSeeder::class,
+            MemberHistorySeeder::class,
+            MemberCategoryHistorySeeder::class,
         ]);
     }
 }

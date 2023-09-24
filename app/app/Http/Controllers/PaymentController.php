@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePaymentRequest;
 use App\Http\Requests\UpdatePaymentRequest;
 use App\Models\AuthMember;
+use App\Models\MemberCategoryHistory;
+use App\Models\MemberHistory;
 use App\Models\Payment;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -22,6 +24,7 @@ class PaymentController extends Controller
         $groupId = $authMember[0]->group_id;
 
         $payments = Payment::where('group_id', $groupId)
+            ->where('del_flg', false)
             ->groupBy('summary_ym')
             ->selectRaw('
                     summary_ym,
@@ -31,6 +34,7 @@ class PaymentController extends Controller
                 ')
             ->orderBy('summary_ym', 'desc')
             ->get();
+
         return Inertia::render(
             'Payments/index',
             [
@@ -79,6 +83,30 @@ class PaymentController extends Controller
      */
     public function showSummary(string $summary_ym)
     {
+        $authMember = AuthMember::query()->get();
+        $groupId = $authMember[0]->group_id;
+
+        $memberHistorySubQuery = MemberHistory::where('summary_ym', $summary_ym)
+            ->where('group_id', $groupId);
+        $memberHistory = $memberHistorySubQuery->get();
+
+        $memberIDs = $memberHistorySubQuery->pluck('member_id')->toArray();
+        $memberCategoryHistory = MemberCategoryHistory::where('summary_ym', $summary_ym)
+            ->whereIn('member_id', $memberIDs)->groupBy('category_id')
+            ->selectRaw('category_id, max(category_name)')
+            ->get();
+
+        $paymentSummaryDetails = Payment::where('group_id', $groupId)
+            ->where('summary_ym', $summary_ym)
+            ->where('del_flg', false)
+            ->groupBy('member_id', 'category_id')
+            ->selectRaw('
+                    member_id,
+                    category_id,
+                    sum(amount) as amount
+                ')
+            ->get();
+
         return to_route('dashboard');
     }
 
