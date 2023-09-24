@@ -32,7 +32,7 @@ const createDate = ref({
     'month' : currentDate.getMonth()
 })
 const format = args => {
-    return `${args.getFullYear()}年${args.getMonth() + 1}月`
+    return `${args.getFullYear()}年${((args.getMonth() + 1)).toString().padStart(2, "0")}月`
 }
 </script>
 
