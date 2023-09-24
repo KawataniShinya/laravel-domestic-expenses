@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePaymentRequest;
 use App\Http\Requests\UpdatePaymentRequest;
+use App\Models\AuthMember;
 use App\Models\Payment;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class PaymentController extends Controller
@@ -16,7 +18,10 @@ class PaymentController extends Controller
      */
     public function index()
     {
-        $payments = Payment::where('group_id', 1)
+        $authMember = AuthMember::query()->get();
+        $groupId = $authMember[0]->group_id;
+
+        $payments = Payment::where('group_id', $groupId)
             ->groupBy('summary_ym')
             ->selectRaw('
                     summary_ym,
