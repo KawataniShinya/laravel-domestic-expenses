@@ -79,7 +79,7 @@ class PaymentController extends Controller
      * Display the specified resource.
      *
      * @param  string  $summary_ym
-     * @return \Illuminate\Http\Response
+     * @return \Inertia\Response
      */
     public function showSummary(string $summary_ym)
     {
@@ -93,7 +93,7 @@ class PaymentController extends Controller
         $memberIDs = $memberHistorySubQuery->pluck('member_id')->toArray();
         $memberCategoryHistory = MemberCategoryHistory::where('summary_ym', $summary_ym)
             ->whereIn('member_id', $memberIDs)->groupBy('category_id')
-            ->selectRaw('category_id, max(category_name)')
+            ->selectRaw('category_id, max(category_name) as category_name')
             ->get();
 
         $paymentSummaryDetails = Payment::where('group_id', $groupId)
@@ -107,7 +107,14 @@ class PaymentController extends Controller
                 ')
             ->get();
 
-        return to_route('dashboard');
+        return Inertia::render(
+            'Payments/summary',
+            [
+                'members' => $memberHistory,
+                'categories' => $memberCategoryHistory,
+                'payments' => $paymentSummaryDetails
+            ]
+        );
     }
 
     /**
