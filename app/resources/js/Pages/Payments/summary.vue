@@ -80,89 +80,20 @@ let paymentsArray = ref()
                             <div class="container px-5 py-24 mx-auto" style="min-height:500px;">
                                 <div class="flex pl-4 mb-4 ml-auto max-w-sm ">
                                     <button class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded">編集</button>
+                                    <button class="flex mx-auto text-white bg-red-500 border-0 py-2 px-6 focus:outline-none hover:bg-red-600 rounded">削除</button>
                                 </div>
                                 <div class="w-full mx-auto overflow-auto">
                                     <table class="table-auto w-full text-left whitespace-no-wrap">
                                         <thead>
                                         <tr>
-                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 rounded-tl rounded-bl">index</th>
-                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">member_id</th>
-                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">member_name</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr v-for="(member, memberIndex) in memberList" :key="memberList.member_id">
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3">{{ memberIndex }}</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ member.member_id }}</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ member.member_name }}</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                    <table class="table-auto w-full text-left whitespace-no-wrap">
-                                        <thead>
-                                        <tr>
-                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 rounded-tl rounded-bl">index</th>
-                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">category_id</th>
-                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">category_name</th>
-                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">income_flg</th>
+                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 rounded-tl rounded-bl">カテゴリ</th>
+                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center" v-for="(member, memberIndex) in memberList" :key="memberList.member_id">{{ member.member_name }}</th>
                                         </tr>
                                         </thead>
                                         <tbody>
                                         <tr v-for="(category, categoryIndex) in categoryList" :key="categoryList.category_id">
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3">{{ categoryIndex }}</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ category.category_id }}</td>
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ category.category_name }}</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ category.income_flg }}</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                    <table class="table-auto w-full text-left whitespace-no-wrap">
-                                        <thead>
-                                        <tr>
-                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 rounded-tl rounded-bl">index</th>
-                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">member_id</th>
-                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">category_id</th>
-                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">amount</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr v-for="(income, incomeIndex) in incomeList" :key="incomeList.member_id">
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3">{{ incomeIndex }}</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ income.member_id }}</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ income.category_id }}</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ income.amount }}</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                    <table class="table-auto w-full text-left whitespace-no-wrap">
-                                        <thead>
-                                        <tr>
-                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 rounded-tl rounded-bl">index</th>
-                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">member_id</th>
-                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">category_id</th>
-                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">amount</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr v-for="(expense, expenseIndex) in expenseList" :key="expenseList.member_id">
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3">{{ expenseIndex }}</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ expense.member_id }}</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ expense.category_id }}</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ expense.amount }}</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                    <table class="table-auto w-full text-left whitespace-no-wrap">
-                                        <thead>
-                                        <tr>
-                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 rounded-tl rounded-bl">A</th>
-                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">B</th>
-                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">共同</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr v-for="paymentsByCategory in paymentsArray">
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end" v-for="payments in paymentsByCategory">{{ payments }}</td>
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end" v-for="(member, memberIndex) in memberList" :key="memberList.member_id">{{ paymentsArray[categoryIndex][memberIndex] }}</td>
                                         </tr>
                                         </tbody>
                                     </table>
