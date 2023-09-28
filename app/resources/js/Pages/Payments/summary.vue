@@ -7,7 +7,8 @@ import '@vuepic/vue-datepicker/dist/main.css'
 const props = defineProps({
     'members' : Array,
     'categories' : Array,
-    'payments' : Array
+    'paymentsIncome' : Array,
+    'paymentsExpense' : Array
 })
 
 onMounted(() => {
@@ -16,25 +17,49 @@ onMounted(() => {
             member_id: member.member_id,
             member_name: member.member_name
         })
+        memberIndexArray.value.push(member.member_id)
     })
     props.categories.forEach(category => {
         categoryList.value.push({
             category_id: category.category_id,
-            category_name: category.category_name
+            category_name: category.category_name,
+            income_flg: category.income_flg
+        })
+        categoryIndexArray.value.push(category.category_id)
+    })
+    props.paymentsIncome.forEach(income => {
+        incomeList.value.push({
+            member_id: income.member_id,
+            category_id: income.category_id,
+            amount: income.amount
         })
     })
-    props.payments.forEach(payment => {
-        paymentList.value.push({
-            member_id: payment.member_id,
-            category_id: payment.category_id,
-            amount: payment.amount
+    props.paymentsExpense.forEach(expense => {
+        expenseList.value.push({
+            member_id: expense.member_id,
+            category_id: expense.category_id,
+            amount: expense.amount
         })
+    })
+
+    paymentsArray = new Array(categoryIndexArray.value.length)
+    for(let i=0; i<paymentsArray.length; i++) {
+        paymentsArray[i] = new Array(memberIndexArray.value.length).fill("")
+    }
+    incomeList.value.forEach(income => {
+        paymentsArray[categoryIndexArray.value.indexOf(income.category_id)][memberIndexArray.value.indexOf(income.member_id)] = income.amount;
+    })
+    expenseList.value.forEach(expence => {
+        paymentsArray[categoryIndexArray.value.indexOf(expence.category_id)][memberIndexArray.value.indexOf(expence.member_id)] = expence.amount;
     })
 })
-
 const memberList = ref([])
+const memberIndexArray = ref([])
 const categoryList = ref([])
-const paymentList = ref([])
+const categoryIndexArray = ref([])
+const incomeList = ref([])
+const expenseList = ref([])
+let paymentsArray = ref()
 </script>
 
 <template>
@@ -79,6 +104,7 @@ const paymentList = ref([])
                                             <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 rounded-tl rounded-bl">index</th>
                                             <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">category_id</th>
                                             <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">category_name</th>
+                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">income_flg</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -86,6 +112,7 @@ const paymentList = ref([])
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3">{{ categoryIndex }}</td>
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ category.category_id }}</td>
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ category.category_name }}</td>
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ category.income_flg }}</td>
                                         </tr>
                                         </tbody>
                                     </table>
@@ -99,11 +126,43 @@ const paymentList = ref([])
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        <tr v-for="(payment, paymentIndex) in paymentList" :key="paymentList.member_id">
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3">{{ paymentIndex }}</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ payment.member_id }}</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ payment.category_id }}</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ payment.amount }}</td>
+                                        <tr v-for="(income, incomeIndex) in incomeList" :key="incomeList.member_id">
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3">{{ incomeIndex }}</td>
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ income.member_id }}</td>
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ income.category_id }}</td>
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ income.amount }}</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                    <table class="table-auto w-full text-left whitespace-no-wrap">
+                                        <thead>
+                                        <tr>
+                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 rounded-tl rounded-bl">index</th>
+                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">member_id</th>
+                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">category_id</th>
+                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">amount</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr v-for="(expense, expenseIndex) in expenseList" :key="expenseList.member_id">
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3">{{ expenseIndex }}</td>
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ expense.member_id }}</td>
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ expense.category_id }}</td>
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ expense.amount }}</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                    <table class="table-auto w-full text-left whitespace-no-wrap">
+                                        <thead>
+                                        <tr>
+                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 rounded-tl rounded-bl">A</th>
+                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">B</th>
+                                            <th class="px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-100 text-center">共同</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr v-for="paymentsByCategory in paymentsArray">
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end" v-for="payments in paymentsByCategory">{{ payments }}</td>
                                         </tr>
                                         </tbody>
                                     </table>

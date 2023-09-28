@@ -8,7 +8,6 @@ use App\Models\AuthMember;
 use App\Models\MemberCategoryHistory;
 use App\Models\MemberHistory;
 use App\Models\Payment;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class PaymentController extends Controller
@@ -99,26 +98,19 @@ class PaymentController extends Controller
         $memberIDs = $memberHistorySubQuery->pluck('member_id')->toArray();
         $memberCategoryHistory = MemberCategoryHistory::where('summary_ym', $summary_ym)
             ->whereIn('member_id', $memberIDs)->groupBy('category_id')
-            ->selectRaw('category_id, max(category_name) as category_name')
+            ->selectRaw('category_id, max(category_name) as category_name, max(income_flg) as income_flg')
             ->get();
 
-        $paymentSummaryDetails = Payment::where('group_id', $groupId)
-            ->where('summary_ym', $summary_ym)
-            ->where('del_flg', false)
-            ->groupBy('member_id', 'category_id')
-            ->selectRaw('
-                    member_id,
-                    category_id,
-                    sum(amount) as amount
-                ')
-            ->get();
+        $paymentSummaryIncome = Payment::paymentSummary($groupId, $summary_ym, true)->get();;
+        $paymentSummaryExpense = Payment::paymentSummary($groupId, $summary_ym, false)->get();;
 
         return Inertia::render(
             'Payments/summary',
             [
                 'members' => $memberHistory,
                 'categories' => $memberCategoryHistory,
-                'payments' => $paymentSummaryDetails
+                'paymentsIncome' => $paymentSummaryIncome,
+                'paymentsExpense' => $paymentSummaryExpense
             ]
         );
     }

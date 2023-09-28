@@ -38,6 +38,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Payment wherePaymentLabel($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Payment whereSummaryYm($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Payment whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Payment paymentSummary($groupId, $summary_ym, $income_flg)
  * @mixin \Eloquent
  */
 class Payment extends Model
@@ -56,4 +57,24 @@ class Payment extends Model
         'payment_label',
         'del_flg'
     ];
+
+    public function scopePaymentSummary($query, $groupId, $summary_ym, $income_flg)
+    {
+        return Payment::leftJoin('member_category_histories', function ($join) {
+            $join
+                ->on('payments.summary_ym', '=', 'member_category_histories.summary_ym')
+                ->on('payments.category_id', '=', 'member_category_histories.category_id')
+                ->on('payments.member_id', '=', 'member_category_histories.member_id');
+            })
+            ->where('payments.group_id', $groupId)
+            ->where('payments.summary_ym', $summary_ym)
+            ->where('member_category_histories.income_flg', $income_flg)
+            ->where('payments.del_flg', false)
+            ->groupBy('payments.member_id', 'payments.category_id')
+            ->selectRaw('
+                    payments.member_id as member_id,
+                    payments.category_id as category_id,
+                    sum(payments.amount) as amount
+                ');
+    }
 }

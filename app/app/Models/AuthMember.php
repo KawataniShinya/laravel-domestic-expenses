@@ -26,20 +26,4 @@ class AuthMember extends Model
     {
         static::addGlobalScope(new MemberByAuth());
     }
-
-    public function scopeGroupMemberHistories(Integer $summary_ym, Integer $group_id)
-    {
-        $sql = '
-            select
-                members.member_id,
-                members.member_name
-            from
-                member_histories
-                left join `groups` on members.group_id = `groups`.group_id
-            where
-                `groups`.group_id = ' . $group_id . '
-        ';
-
-        return DB::query($sql);
-    }
 }
