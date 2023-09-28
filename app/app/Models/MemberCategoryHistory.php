@@ -28,6 +28,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereUpdatedAt($value)
  * @property string $category_name 収支分類名
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereCategoryName($value)
+ * @property int $income_flg 収入フラグ
+ * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereIncomeFlg($value)
  * @mixin \Eloquent
  */
 class MemberCategoryHistory extends Model

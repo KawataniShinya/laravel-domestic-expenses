@@ -26,6 +26,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Category whereDisplayOrder($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Category whereGroupId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Category whereUpdatedAt($value)
+ * @property int $income_flg 収入フラグ
+ * @method static \Illuminate\Database\Eloquent\Builder|Category whereIncomeFlg($value)
  * @mixin \Eloquent
  */
 class Category extends Model

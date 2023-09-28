@@ -18,6 +18,7 @@ return new class extends Migration
             $table->bigInteger('group_id')->unsigned()->comment('グループID');
             $table->bigInteger('display_order')->unsigned()->comment('グループ別表示順');
             $table->string('category_name')->comment('収支分類名');
+            $table->boolean('income_flg')->comment('収入フラグ');
             $table->boolean('del_flg')->default(false)->comment('削除フラグ');
             $table->timestamps();
 
