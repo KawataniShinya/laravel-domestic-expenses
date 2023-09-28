@@ -23,16 +23,22 @@ class PaymentController extends Controller
         $authMember = AuthMember::query()->get();
         $groupId = $authMember[0]->group_id;
 
-        $payments = Payment::where('group_id', $groupId)
-            ->where('del_flg', false)
-            ->groupBy('summary_ym')
+        $payments = Payment::leftJoin('member_category_histories', function ($join) {
+                $join
+                    ->on('payments.summary_ym', '=', 'member_category_histories.summary_ym')
+                    ->on('payments.category_id', '=', 'member_category_histories.category_id')
+                    ->on('payments.member_id', '=', 'member_category_histories.member_id');
+            })
+            ->where('payments.group_id', $groupId)
+            ->where('payments.del_flg', false)
+            ->groupBy('payments.summary_ym')
             ->selectRaw('
-                    summary_ym,
-                    sum(case when income_flg=1 then amount else 0 end) as income,
-                    sum(case when income_flg=0 then amount else 0 end) as expense,
-                    sum(case when income_flg=1 then amount else amount * (-1) end) as total
+                    payments.summary_ym,
+                    sum(case when member_category_histories.income_flg=1 then payments.amount else 0 end) as income,
+                    sum(case when member_category_histories.income_flg=0 then payments.amount else 0 end) as expense,
+                    sum(case when member_category_histories.income_flg=1 then payments.amount else payments.amount * (-1) end) as total
                 ')
-            ->orderBy('summary_ym', 'desc')
+            ->orderBy('payments.summary_ym', 'desc')
             ->get();
 
         return Inertia::render(

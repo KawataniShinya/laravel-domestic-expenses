@@ -19,7 +19,6 @@ return new class extends Migration
             $table->bigInteger('group_id')->unsigned()->comment('グループID');
             $table->bigInteger('member_id')->unsigned()->comment('メンバーID');
             $table->bigInteger('category_id')->unsigned()->comment('収支分類ID');
-            $table->boolean('income_flg')->comment('収入フラグ');
             $table->bigInteger('categorized_payment_id')->unsigned()->nullable()->comment('収支分類別明細ID');
             $table->date('payment_date')->nullable()->comment('発生日付');
             $table->bigInteger('amount')->comment('金額');
@@ -27,7 +26,7 @@ return new class extends Migration
             $table->boolean('del_flg')->default(false)->comment('削除フラグ');
             $table->timestamps();
 
-            $table->unique(['summary_ym', 'group_id', 'member_id', 'category_id', 'income_flg', 'categorized_payment_id'], 'payment_unique');
+            $table->unique(['summary_ym', 'group_id', 'member_id', 'category_id', 'categorized_payment_id'], 'payment_unique');
             $table->comment('収支明細');
         });
     }
