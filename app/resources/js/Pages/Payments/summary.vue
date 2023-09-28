@@ -5,6 +5,7 @@ import { onMounted, ref } from 'vue';
 import '@vuepic/vue-datepicker/dist/main.css'
 
 const props = defineProps({
+    'summary_ym' : String,
     'members' : Array,
     'categories' : Array,
     'paymentsIncome' : Array,
@@ -20,12 +21,22 @@ onMounted(() => {
         memberIndexArray.value.push(member.member_id)
     })
     props.categories.forEach(category => {
-        categoryList.value.push({
-            category_id: category.category_id,
-            category_name: category.category_name,
-            income_flg: category.income_flg
-        })
-        categoryIndexArray.value.push(category.category_id)
+        if(category.income_flg === 1) {
+            categoryIncomeList.value.push({
+                category_id: category.category_id,
+                category_name: category.category_name,
+                income_flg: category.income_flg
+            })
+            categoryIncomeIndexArray.value.push(category.category_id)
+        }
+        else {
+            categoryExpneseList.value.push({
+                category_id: category.category_id,
+                category_name: category.category_name,
+                income_flg: category.income_flg
+            })
+            categoryExpenseIndexArray.value.push(category.category_id)
+        }
     })
     props.paymentsIncome.forEach(income => {
         incomeList.value.push({
@@ -42,24 +53,41 @@ onMounted(() => {
         })
     })
 
-    paymentsArray = new Array(categoryIndexArray.value.length)
-    for(let i=0; i<paymentsArray.length; i++) {
-        paymentsArray[i] = new Array(memberIndexArray.value.length).fill("")
+    paymentsIncomeArray = new Array(categoryIncomeIndexArray.value.length)
+    for(let i=0; i<paymentsIncomeArray.length; i++) {
+        paymentsIncomeArray[i] = new Array(memberIndexArray.value.length).fill("")
     }
     incomeList.value.forEach(income => {
-        paymentsArray[categoryIndexArray.value.indexOf(income.category_id)][memberIndexArray.value.indexOf(income.member_id)] = income.amount;
+        paymentsIncomeArray[categoryIncomeIndexArray.value.indexOf(income.category_id)][memberIndexArray.value.indexOf(income.member_id)] = income.amount;
     })
+
+    paymentsExpenseArray = new Array(categoryExpenseIndexArray.value.length)
+    for(let i=0; i<paymentsExpenseArray.length; i++) {
+        paymentsExpenseArray[i] = new Array(memberIndexArray.value.length).fill("")
+    }
     expenseList.value.forEach(expence => {
-        paymentsArray[categoryIndexArray.value.indexOf(expence.category_id)][memberIndexArray.value.indexOf(expence.member_id)] = expence.amount;
+        paymentsExpenseArray[categoryExpenseIndexArray.value.indexOf(expence.category_id)][memberIndexArray.value.indexOf(expence.member_id)] = expence.amount;
     })
 })
 const memberList = ref([])
 const memberIndexArray = ref([])
-const categoryList = ref([])
-const categoryIndexArray = ref([])
+const categoryIncomeList = ref([])
+const categoryIncomeIndexArray = ref([])
+const categoryExpneseList = ref([])
+const categoryExpenseIndexArray = ref([])
 const incomeList = ref([])
 const expenseList = ref([])
-let paymentsArray = ref()
+let paymentsIncomeArray = ref()
+let paymentsExpenseArray = ref()
+
+const commaSeparateOrBlank = args => {
+    if (args !== "") {
+        return Number(args).toLocaleString()
+    }
+    else {
+        return "";
+    }
+}
 </script>
 
 <template>
@@ -78,6 +106,7 @@ let paymentsArray = ref()
                     <div class="p-6 text-gray-900">
                         <section class="text-gray-900 body-font">
                             <div class="container px-5 py-24 mx-auto" style="min-height:500px;">
+                                <h1 class="text-3xl">{{ props.summary_ym.substring(0, 4) + '年' + props.summary_ym.substring(4, 6) + '月' }}</h1>
                                 <div class="flex pl-4 mb-4 ml-auto max-w-sm ">
                                     <button class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded">編集</button>
                                     <button class="flex mx-auto text-white bg-red-500 border-0 py-2 px-6 focus:outline-none hover:bg-red-600 rounded">削除</button>
@@ -91,9 +120,19 @@ let paymentsArray = ref()
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        <tr v-for="(category, categoryIndex) in categoryList" :key="categoryList.category_id">
+                                        <tr class="border-t-4">(収入)</tr>
+                                        <tr v-for="(category, categoryIndex) in categoryIncomeList" :key="categoryIncomeList.category_id">
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ category.category_name }}</td>
-                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end" v-for="(member, memberIndex) in memberList" :key="memberList.member_id">{{ paymentsArray[categoryIndex][memberIndex] }}</td>
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end" v-for="(member, memberIndex) in memberList" :key="memberList.member_id">
+                                                {{ commaSeparateOrBlank(paymentsIncomeArray[categoryIndex][memberIndex]) }}
+                                            </td>
+                                        </tr>
+                                        <tr class="border-t-4">(支出)</tr>
+                                        <tr v-for="(category, categoryIndex) in categoryExpneseList" :key="categoryExpneseList.category_id">
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ category.category_name }}</td>
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end" v-for="(member, memberIndex) in memberList" :key="memberList.member_id">
+                                                {{ commaSeparateOrBlank(paymentsExpenseArray[categoryIndex][memberIndex]) }}
+                                            </td>
                                         </tr>
                                         </tbody>
                                     </table>

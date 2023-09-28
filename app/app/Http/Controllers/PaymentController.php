@@ -107,6 +107,7 @@ class PaymentController extends Controller
         return Inertia::render(
             'Payments/summary',
             [
+                'summary_ym' => $summary_ym,
                 'members' => $memberHistory,
                 'categories' => $memberCategoryHistory,
                 'paymentsIncome' => $paymentSummaryIncome,
