@@ -101,8 +101,11 @@ class PaymentController extends Controller
             ->selectRaw('category_id, max(category_name) as category_name, max(income_flg) as income_flg')
             ->get();
 
-        $paymentSummaryIncome = Payment::paymentSummary($groupId, $summary_ym, true)->get();;
-        $paymentSummaryExpense = Payment::paymentSummary($groupId, $summary_ym, false)->get();;
+        $paymentSummaryIncome = Payment::paymentSummaryByCategoryMember($groupId, $summary_ym, true)->get();
+        $paymentSummaryExpense = Payment::paymentSummaryByCategoryMember($groupId, $summary_ym, false)->get();
+
+        $lastMonth = $this->getLastMonth($summary_ym);
+        $paymentExpenseByMemberLastMonth = Payment::paymentSummaryByMember($groupId, $lastMonth, false)->get();
 
         return Inertia::render(
             'Payments/summary',
@@ -111,9 +114,18 @@ class PaymentController extends Controller
                 'members' => $memberHistory,
                 'categories' => $memberCategoryHistory,
                 'paymentsIncome' => $paymentSummaryIncome,
-                'paymentsExpense' => $paymentSummaryExpense
+                'paymentsExpense' => $paymentSummaryExpense,
+                'paymentExpenseByMemberLastMonth' => $paymentExpenseByMemberLastMonth
             ]
         );
+    }
+
+    private function getLastMonth(int $yyyymm)
+    {
+        $currentYear = substr($yyyymm, 0, 4);
+        $currentMonth = substr($yyyymm, 4, 2);
+        $lastMonthTime = strtotime($currentYear . '-' . $currentMonth . '-01 -1 month');
+        return date('Ym', $lastMonthTime);
     }
 
     /**

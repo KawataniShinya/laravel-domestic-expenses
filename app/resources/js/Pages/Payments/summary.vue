@@ -9,7 +9,8 @@ const props = defineProps({
     'members' : Array,
     'categories' : Array,
     'paymentsIncome' : Array,
-    'paymentsExpense' : Array
+    'paymentsExpense' : Array,
+    'paymentExpenseByMemberLastMonth' : Array
 })
 
 onMounted(() => {
@@ -39,39 +40,45 @@ onMounted(() => {
         }
     })
     props.paymentsIncome.forEach(income => {
-        incomeList.value.push({
+        incomeTotalList.value.push({
             member_id: income.member_id,
             category_id: income.category_id,
             amount: income.amount
         })
     })
     props.paymentsExpense.forEach(expense => {
-        expenseList.value.push({
+        expenseTotalList.value.push({
             member_id: expense.member_id,
             category_id: expense.category_id,
             amount: expense.amount
         })
     })
+    // メンバー別先月支出額
+    props.paymentExpenseByMemberLastMonth.forEach(expenseLast => {
+        expenseLastList.value.push(expenseLast.amount)
+    })
 
+    // 収入テーブルへの2次元配列マッピング
     paymentsIncomeArray = new Array(categoryIncomeIndexArray.value.length)
     for(let i=0; i<paymentsIncomeArray.length; i++) {
         paymentsIncomeArray[i] = new Array(memberIndexArray.value.length).fill("")
     }
-    incomeList.value.forEach(income => {
+    // メンバー別収入総額
+    incomeTotalList.value.forEach(income => {
         paymentsIncomeArray[categoryIncomeIndexArray.value.indexOf(income.category_id)][memberIndexArray.value.indexOf(income.member_id)] = income.amount;
         sumPaymentIncome.value += Number(income.amount);
     })
 
+    // 支出テーブルへの2次元配列マッピング
     paymentsExpenseArray = new Array(categoryExpenseIndexArray.value.length)
     for(let i=0; i<paymentsExpenseArray.length; i++) {
         paymentsExpenseArray[i] = new Array(memberIndexArray.value.length).fill("")
     }
-    expenseList.value.forEach(expence => {
+    // メンバー別支出総額
+    expenseTotalList.value.forEach(expence => {
         paymentsExpenseArray[categoryExpenseIndexArray.value.indexOf(expence.category_id)][memberIndexArray.value.indexOf(expence.member_id)] = expence.amount;
         sumPaymentExpense.value += Number(expence.amount)
     })
-
-
 })
 const memberList = ref([])
 const memberIndexArray = ref([])
@@ -79,8 +86,9 @@ const categoryIncomeList = ref([])
 const categoryIncomeIndexArray = ref([])
 const categoryExpneseList = ref([])
 const categoryExpenseIndexArray = ref([])
-const incomeList = ref([])
-const expenseList = ref([])
+const incomeTotalList = ref([])
+const expenseTotalList = ref([])
+const expenseLastList = ref([])
 let paymentsIncomeArray = ref()
 let sumPaymentIncome = ref(0)
 let paymentsExpenseArray = ref()
@@ -161,6 +169,13 @@ const sumVertical = (paymentArray, memberIndex) => {
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-amber-100">
                                                 {{ commaSeparateOrBlank(sumPaymentIncome) }}
                                             </td>
+                                        </tr>
+                                        <tr>
+                                            <th class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-yellow-200">(収入-先月支出)</th>
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-yellow-200" v-for="(member, memberIndex) in memberList" :key="memberList.member_id">
+                                                {{ commaSeparateOrBlank(sumVertical(paymentsIncomeArray, memberIndex) - expenseLastList[memberIndex]) }}
+                                            </td>
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-yellow-200"></td>
                                         </tr>
                                         <tr class="border-t-4 bg-gray-100"><td>(支出)</td><td v-for="(member, memberIndex) in memberList" :key="memberList.member_id"></td><td></td></tr>
                                         <tr v-for="(category, categoryIndex) in categoryExpneseList" :key="categoryExpneseList.category_id">
