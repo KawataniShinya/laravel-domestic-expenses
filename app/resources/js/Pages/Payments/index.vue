@@ -78,7 +78,7 @@ const format = args => {
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ Number(payment.expense).toLocaleString() }}</td>
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-lg text-gray-900 text-end">{{ Number(payment.total).toLocaleString() }}</td>
                                             <td class="border-t-2 border-b-2 border-gray-200 text-center">
-                                                <Link class="mx-auto text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded" :href="route('payment.showSummary', { summary_ym: payment.summary_ym })">内訳</Link>
+                                                <Link class="mx-auto text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded" :href="route('payments.showSummary', { summary_ym: payment.summary_ym })">内訳</Link>
                                             </td>
                                         </tr>
                                         </tbody>
