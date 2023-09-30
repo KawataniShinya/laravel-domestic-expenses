@@ -152,7 +152,7 @@ class PaymentController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param  string  $summary_ym
-     * @return \Illuminate\Http\Response
+     * @return \Inertia\Response
      */
     public function editPayments(string $summary_ym)
     {
@@ -171,7 +171,14 @@ class PaymentController extends Controller
 
             DB::commit();
 
-            return to_route('dashboard');
+            return Inertia::render(
+                'Payments/edit',
+                [
+                    'summary_ym' => $summary_ym,
+                    'members' => $memberHistories,
+                    'payments' => $payments
+                ]
+            );
         } catch (\Exception $e) {
             DB::rollBack();
         }
