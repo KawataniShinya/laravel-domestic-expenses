@@ -140,6 +140,17 @@ class PaymentController extends Controller
     }
 
     /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  string  $summary_ym
+     * @return \Illuminate\Http\Response
+     */
+    public function editPayments(string $summary_ym)
+    {
+        return to_route('dashboard');
+    }
+
+    /**
      * Update the specified resource in storage.
      *
      * @param  \App\Http\Requests\UpdatePaymentRequest  $request

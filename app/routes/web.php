@@ -19,6 +19,7 @@ use App\Http\Controllers\PaymentController;
 
 Route::resource('payments', PaymentController::class)->middleware(['auth', 'verified']);
 Route::get('summary/{summary_ym}', [PaymentController::class, 'showSummary'])->name('payments.showSummary')->middleware(['auth', 'verified']);
+Route::get('editpayments/{summary_ym}', [PaymentController::class, 'editPayments'])->name('payments.editPayments')->middleware(['auth', 'verified']);
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
