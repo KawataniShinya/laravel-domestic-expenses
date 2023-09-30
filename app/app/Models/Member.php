@@ -28,9 +28,29 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Member whereUserId($value)
  * @property string|null $email メールアドレス
  * @method static \Illuminate\Database\Eloquent\Builder|Member whereEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Member groupMembers(int $groupId)
  * @mixin \Eloquent
  */
 class Member extends Model
 {
     use HasFactory;
+
+    public function scopeGroupMembers($query, int $groupId)
+    {
+        return Member::leftJoin('groups', function ($join) {
+            $join
+                ->on('members.group_id', '=', 'groups.group_id');
+        })
+            ->where('members.group_id', $groupId)
+            ->where('members.del_flg', false)
+            ->where('groups.del_flg', false)
+            ->selectRaw(
+                '
+                        groups.group_id as group_id,
+                        groups.group_name as group_name,
+                        members.member_id as member_id,
+                        members.member_name as member_name
+                    '
+            );
+    }
 }

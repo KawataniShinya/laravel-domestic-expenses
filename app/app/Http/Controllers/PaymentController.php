@@ -5,10 +5,14 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePaymentRequest;
 use App\Http\Requests\UpdatePaymentRequest;
 use App\Models\AuthMember;
+use App\Models\Member;
 use App\Models\MemberCategoryHistory;
 use App\Models\MemberHistory;
 use App\Models\Payment;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Inertia\Inertia;
+use function PHPUnit\Framework\isEmpty;
 
 class PaymentController extends Controller
 {
@@ -147,7 +151,50 @@ class PaymentController extends Controller
      */
     public function editPayments(string $summary_ym)
     {
+        $authMember = AuthMember::query()->get();
+        $groupId = $authMember[0]->group_id;
+
+        $memberHistory = $this->getOrCreateMemberHistory($summary_ym, $groupId);
+
         return to_route('dashboard');
+    }
+
+    private function getOrCreateMemberHistory(string $summary_ym, int $groupId)
+    {
+        $memberHistory = MemberHistory::where('summary_ym', $summary_ym)
+            ->where('group_id', $groupId)
+            ->get();
+
+        if($memberHistory->isEmpty()) {
+            $groupMembers = Member::groupMembers($groupId)->get();
+            $memberHistoryArray = $this->createMemberHistoryArray($groupMembers, $summary_ym);
+            MemberHistory::insert($memberHistoryArray);
+
+            return MemberHistory::where('summary_ym', $summary_ym)
+                ->where('group_id', $groupId)
+                ->get();
+        }
+        else {
+            return $memberHistory;
+        }
+    }
+
+    private function createMemberHistoryArray(Collection $groupMembers, string $summary_ym)
+    {
+        $memberHistoryArray = array();
+        foreach ($groupMembers as $groupMember) {
+            $memberHistoryArray[] = [
+                'summary_ym' => $summary_ym,
+                'group_id' => $groupMember->group_id,
+                'group_name' => $groupMember->group_name,
+                'member_id' => $groupMember->member_id,
+                'member_name' => $groupMember->member_name,
+                'del_flg' => false,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
+            ];
+        }
+        return $memberHistoryArray;
     }
 
     /**
