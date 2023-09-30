@@ -40,6 +40,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Payment whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Payment paymentSummaryByCategoryMember(int $groupId, string $summary_ym, bool $income_flg)
  * @method static \Illuminate\Database\Eloquent\Builder|Payment paymentSummaryByMember(int $groupId, string $summary_ym, bool $income_flg)
+ * @method static \Illuminate\Database\Eloquent\Builder|Payment paymentsForGroup(int $groupId, array $memberIDs, string $summary_ym)
  * @mixin \Eloquent
  */
 class Payment extends Model
@@ -80,14 +81,29 @@ class Payment extends Model
             ->orderBy('member_id');
     }
 
+    public function scopePaymentsForGroup($query, int $groupId, array $memberIDs, string $summary_ym)
+    {
+        return Payment::leftJoin('member_category_histories', function ($join) {
+                $join
+                    ->on('payments.summary_ym', '=', 'member_category_histories.summary_ym')
+                    ->on('payments.category_id', '=', 'member_category_histories.category_id')
+                    ->on('payments.member_id', '=', 'member_category_histories.member_id');
+            })
+            ->where('payments.group_id', $groupId)
+            ->where('payments.summary_ym', $summary_ym)
+            ->where('payments.del_flg', false)
+            ->selectRaw('payments.member_id, payments.category_id, member_category_histories.category_name, payments.categorized_payment_id, payments.payment_date, payments.amount, payments.payment_label')
+            ->orderByRaw('payments.member_id, payments.category_id, payments.categorized_payment_id');
+    }
+
     public function scopePaymentSummaryByMember($query, int $groupId, string $summary_ym, bool $income_flg)
     {
         return Payment::leftJoin('member_category_histories', function ($join) {
-            $join
-                ->on('payments.summary_ym', '=', 'member_category_histories.summary_ym')
-                ->on('payments.category_id', '=', 'member_category_histories.category_id')
-                ->on('payments.member_id', '=', 'member_category_histories.member_id');
-        })
+                $join
+                    ->on('payments.summary_ym', '=', 'member_category_histories.summary_ym')
+                    ->on('payments.category_id', '=', 'member_category_histories.category_id')
+                    ->on('payments.member_id', '=', 'member_category_histories.member_id');
+            })
             ->where('payments.group_id', $groupId)
             ->where('payments.summary_ym', $summary_ym)
             ->where('member_category_histories.income_flg', $income_flg)

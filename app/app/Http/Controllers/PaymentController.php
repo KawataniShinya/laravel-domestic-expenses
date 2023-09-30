@@ -104,8 +104,10 @@ class PaymentController extends Controller
 
         $memberIDs = $memberHistorySubQuery->pluck('member_id')->toArray();
         $memberCategoryHistory = MemberCategoryHistory::where('summary_ym', $summary_ym)
-            ->whereIn('member_id', $memberIDs)->groupBy('category_id')
-            ->selectRaw('category_id, max(category_name) as category_name, max(income_flg) as income_flg')
+            ->whereIn('member_id', $memberIDs)
+            ->groupBy('category_id')
+            ->selectRaw('category_id, max(category_name) as category_name, max(display_order) as display_order, max(income_flg) as income_flg')
+            ->orderBy('display_order')
             ->get();
 
         $paymentSummaryIncome = Payment::paymentSummaryByCategoryMember($groupId, $summary_ym, true)->get();
@@ -161,7 +163,11 @@ class PaymentController extends Controller
             $groupId = $authMember[0]->group_id;
 
             $memberHistories = $this->getOrCreateMemberHistory($summary_ym, $groupId);
-            $memberCategoryHistories = $this->getOrCreateMemberCategoryHistory($summary_ym, $memberHistories);
+            $memberIDs = $this->getMemberIDs($memberHistories);
+
+            $memberCategoryHistories = $this->getOrCreateMemberCategoryHistory($summary_ym, $memberIDs);
+
+            $payments = Payment::paymentsForGroup($groupId, $memberIDs, $summary_ym)->get();
 
             DB::commit();
 
@@ -175,6 +181,7 @@ class PaymentController extends Controller
     {
         $memberHistory = MemberHistory::where('summary_ym', $summary_ym)
             ->where('group_id', $groupId)
+            ->orderBy('member_id')
             ->get();
 
         if($memberHistory->isEmpty()) {
@@ -184,6 +191,7 @@ class PaymentController extends Controller
 
             return MemberHistory::where('summary_ym', $summary_ym)
                 ->where('group_id', $groupId)
+                ->orderBy('member_id')
                 ->get();
         }
         else {
@@ -209,12 +217,13 @@ class PaymentController extends Controller
         return $memberHistoryArray;
     }
 
-    private function getOrCreateMemberCategoryHistory(string $summary_ym, Collection $memberHistories)
+    private function getOrCreateMemberCategoryHistory(string $summary_ym, array $memberIDs)
     {
-        $memberIDs = $this->getMemberIDs($memberHistories);
         $memberCategoryHistory = MemberCategoryHistory::where('summary_ym', $summary_ym)
-            ->whereIn('member_id', $memberIDs)->groupBy('category_id')
-            ->selectRaw('category_id, max(category_name) as category_name, max(income_flg) as income_flg')
+            ->whereIn('member_id', $memberIDs)
+            ->groupBy('category_id')
+            ->selectRaw('category_id, max(category_name) as category_name, max(display_order) as display_order, max(income_flg) as income_flg')
+            ->orderBy('display_order')
             ->get();
 
         if($memberCategoryHistory->isEmpty()) {
@@ -223,8 +232,10 @@ class PaymentController extends Controller
             MemberCategoryHistory::insert($memberCategoryHistoryArray);
 
             return MemberCategoryHistory::where('summary_ym', $summary_ym)
-                ->whereIn('member_id', $memberIDs)->groupBy('category_id')
-                ->selectRaw('category_id, max(category_name) as category_name, max(income_flg) as income_flg')
+                ->whereIn('member_id', $memberIDs)
+                ->groupBy('category_id')
+                ->selectRaw('category_id, max(category_name) as category_name, max(display_order) as display_order, max(income_flg) as income_flg')
+                ->orderBy('display_order')
                 ->get();
         }
         else {
