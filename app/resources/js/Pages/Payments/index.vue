@@ -34,6 +34,10 @@ const createDate = ref({
 const format = args => {
     return `${args.getFullYear()}年${((args.getMonth() + 1)).toString().padStart(2, "0")}月`
 }
+
+const getCreateDate = () => {
+    return `${createDate.value.year}${((createDate.value.month + 1)).toString().padStart(2, "0")}`
+}
 </script>
 
 <template>
@@ -58,7 +62,7 @@ const format = args => {
                                             <Datepicker v-model="createDate" :format="format" monthPicker />
                                         </v-card>
                                     </v-row>
-                                    <button class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded">新規作成</button>
+                                    <Link class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded" :href="route('payments.showSummary', { summary_ym: getCreateDate() })">新規作成</Link>
                                 </div>
                                 <div class="w-full mx-auto overflow-auto">
                                     <table class="table-auto w-full text-left whitespace-no-wrap">
