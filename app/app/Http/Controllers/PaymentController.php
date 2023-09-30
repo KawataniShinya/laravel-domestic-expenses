@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePaymentRequest;
 use App\Http\Requests\UpdatePaymentRequest;
 use App\Models\AuthMember;
+use App\Models\Category;
 use App\Models\Member;
+use App\Models\MemberCategory;
 use App\Models\MemberCategoryHistory;
 use App\Models\MemberHistory;
 use App\Models\Payment;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use function PHPUnit\Framework\isEmpty;
 
@@ -151,12 +154,21 @@ class PaymentController extends Controller
      */
     public function editPayments(string $summary_ym)
     {
-        $authMember = AuthMember::query()->get();
-        $groupId = $authMember[0]->group_id;
+        DB::beginTransaction();
 
-        $memberHistory = $this->getOrCreateMemberHistory($summary_ym, $groupId);
+        try {
+            $authMember = AuthMember::query()->get();
+            $groupId = $authMember[0]->group_id;
 
-        return to_route('dashboard');
+            $memberHistories = $this->getOrCreateMemberHistory($summary_ym, $groupId);
+            $memberCategoryHistories = $this->getOrCreateMemberCategoryHistory($summary_ym, $memberHistories);
+
+            DB::commit();
+
+            return to_route('dashboard');
+        } catch (\Exception $e) {
+            DB::rollBack();
+        }
     }
 
     private function getOrCreateMemberHistory(string $summary_ym, int $groupId)
@@ -195,6 +207,62 @@ class PaymentController extends Controller
             ];
         }
         return $memberHistoryArray;
+    }
+
+    private function getOrCreateMemberCategoryHistory(string $summary_ym, Collection $memberHistories)
+    {
+        $memberIDs = $this->getMemberIDs($memberHistories);
+        $memberCategoryHistory = MemberCategoryHistory::where('summary_ym', $summary_ym)
+            ->whereIn('member_id', $memberIDs)->groupBy('category_id')
+            ->selectRaw('category_id, max(category_name) as category_name, max(income_flg) as income_flg')
+            ->get();
+
+        if($memberCategoryHistory->isEmpty()) {
+            $memberCategories = MemberCategory::memberCategoriesByMembers($memberIDs)->get();
+            $memberCategoryHistoryArray = $this->createMemberCategoryHistoryArray($memberCategories, $summary_ym);
+            MemberCategoryHistory::insert($memberCategoryHistoryArray);
+
+            return MemberCategoryHistory::where('summary_ym', $summary_ym)
+                ->whereIn('member_id', $memberIDs)->groupBy('category_id')
+                ->selectRaw('category_id, max(category_name) as category_name, max(income_flg) as income_flg')
+                ->get();
+        }
+        else {
+            return $memberCategoryHistory;
+        }
+    }
+
+    /**
+     * @param Collection $memberHistories
+     * @return array
+     */
+    public function getMemberIDs(Collection $memberHistories): array
+    {
+        $memberIDs = array();
+        foreach ($memberHistories as $memberHistory) {
+            $memberIDs[] = $memberHistory->member_id;
+        }
+        return $memberIDs;
+    }
+
+    public function createMemberCategoryHistoryArray(Collection $memberCategories, string $summary_ym)
+    {
+        $memberCategoryHistoryArray = array();
+        foreach ($memberCategories as $memberCategory) {
+            $memberCategoryHistoryArray[] = [
+                'summary_ym' => $summary_ym,
+                'member_id' => $memberCategory->member_id,
+                'category_id' => $memberCategory->category_id,
+                'category_name' => $memberCategory->category_name,
+                'display_order' => $memberCategory->display_order,
+                'income_flg' => $memberCategory->income_flg,
+                'del_flg' => false,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
+            ];
+        }
+
+        return $memberCategoryHistoryArray;
     }
 
     /**

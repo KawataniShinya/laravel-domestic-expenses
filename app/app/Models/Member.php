@@ -38,9 +38,9 @@ class Member extends Model
     public function scopeGroupMembers($query, int $groupId)
     {
         return Member::leftJoin('groups', function ($join) {
-            $join
-                ->on('members.group_id', '=', 'groups.group_id');
-        })
+                $join
+                    ->on('members.group_id', '=', 'groups.group_id');
+            })
             ->where('members.group_id', $groupId)
             ->where('members.del_flg', false)
             ->where('groups.del_flg', false)

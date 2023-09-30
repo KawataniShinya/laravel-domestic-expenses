@@ -19,6 +19,13 @@ class MemberCategorySeeder extends Seeder
         DB::table('member_categories')->insert([
             [
                 'member_id' => 1,
+                'category_id' => 1,
+                'del_flg' => 0,
+                'created_at' => new DateTime(),
+                'updated_at' => new DateTime(),
+            ],
+            [
+                'member_id' => 1,
                 'category_id' => 2,
                 'del_flg' => 0,
                 'created_at' => new DateTime(),
@@ -40,6 +47,13 @@ class MemberCategorySeeder extends Seeder
             ],
             [
                 'member_id' => 2,
+                'category_id' => 1,
+                'del_flg' => 0,
+                'created_at' => new DateTime(),
+                'updated_at' => new DateTime(),
+            ],
+            [
+                'member_id' => 2,
                 'category_id' => 2,
                 'del_flg' => 0,
                 'created_at' => new DateTime(),
@@ -55,6 +69,13 @@ class MemberCategorySeeder extends Seeder
             [
                 'member_id' => 2,
                 'category_id' => 4,
+                'del_flg' => 0,
+                'created_at' => new DateTime(),
+                'updated_at' => new DateTime(),
+            ],
+            [
+                'member_id' => 3,
+                'category_id' => 1,
                 'del_flg' => 0,
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),

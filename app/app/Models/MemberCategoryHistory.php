@@ -30,6 +30,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereCategoryName($value)
  * @property int $income_flg 収入フラグ
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereIncomeFlg($value)
+ * @property int $display_order グループ別表示順
+ * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereDisplayOrder($value)
  * @mixin \Eloquent
  */
 class MemberCategoryHistory extends Model
