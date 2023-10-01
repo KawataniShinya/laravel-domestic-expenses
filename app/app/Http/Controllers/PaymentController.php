@@ -176,6 +176,7 @@ class PaymentController extends Controller
                 [
                     'summary_ym' => $summary_ym,
                     'members' => $memberHistories,
+                    'memberCategories' => $memberCategoryHistories,
                     'payments' => $payments
                 ]
             );
@@ -228,9 +229,9 @@ class PaymentController extends Controller
     {
         $memberCategoryHistory = MemberCategoryHistory::where('summary_ym', $summary_ym)
             ->whereIn('member_id', $memberIDs)
-            ->groupBy('category_id')
-            ->selectRaw('category_id, max(category_name) as category_name, max(display_order) as display_order, max(income_flg) as income_flg')
-            ->orderBy('display_order')
+            ->groupByRaw('member_id, category_id')
+            ->selectRaw('member_id, category_id, max(category_name) as category_name, max(display_order) as display_order, max(income_flg) as income_flg')
+            ->orderByRaw('member_id, category_id, display_order')
             ->get();
 
         if($memberCategoryHistory->isEmpty()) {
@@ -240,9 +241,9 @@ class PaymentController extends Controller
 
             return MemberCategoryHistory::where('summary_ym', $summary_ym)
                 ->whereIn('member_id', $memberIDs)
-                ->groupBy('category_id')
-                ->selectRaw('category_id, max(category_name) as category_name, max(display_order) as display_order, max(income_flg) as income_flg')
-                ->orderBy('display_order')
+                ->groupByRaw('member_id, category_id')
+                ->selectRaw('member_id, category_id, max(category_name) as category_name, max(display_order) as display_order, max(income_flg) as income_flg')
+                ->orderByRaw('member_id, category_id, display_order')
                 ->get();
         }
         else {
