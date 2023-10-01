@@ -16,20 +16,32 @@ onMounted(() => {
             member_name: member.member_name
         })
     })
+
+    paymentList = []
     props.payments.forEach(payment => {
-        paymentList.value.push({
-            member_id: payment.payments,
-            category_id: payment.category_id,
-            category_name: payment.category_name,
-            categorized_payment_id: payment.categorized_payment_id,
+        const member_id = payment.member_id
+        const category_id = payment.category_id
+        const categorized_payment_id = payment.categorized_payment_id
+        const paymentProperty = {
             payment_date: payment.payment_date,
             amount: payment.amount,
             payment_label: payment.payment_label
-        })
+        }
+
+        if (paymentList[member_id] === undefined) {
+            paymentList[member_id] = {}
+        }
+        if (paymentList[member_id][category_id] === undefined) {
+            paymentList[member_id][category_id] = {category_name: payment.category_name}
+        }
+        if (paymentList[member_id][category_id][categorized_payment_id] === undefined) {
+            paymentList[member_id][category_id][categorized_payment_id] = {}
+        }
+        paymentList[member_id][category_id][categorized_payment_id] = paymentProperty
     })
 })
 const memberList = ref([])
-const paymentList = ref([])
+let paymentList = ref()
 
 const commaSeparateOrBlank = args => {
     if (args !== "") {
