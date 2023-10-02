@@ -114,6 +114,11 @@ const getPaymentProperty = (memberId, categoryId, rowPayment, propertyName) => {
         return paymentList[memberId][categoryId][categorizedPaymentId][propertyName]
     }
 }
+
+const setTempItem = arg => {
+    tempItem = arg
+}
+let tempItem
 </script>
 
 <template>
@@ -141,30 +146,41 @@ const getPaymentProperty = (memberId, categoryId, rowPayment, propertyName) => {
                                         <tr>
                                             <td v-for="(member, memberKey) in memberList" class="align-top">
                                                 <div class="mx-3">
-                                                <table class="table-auto w-full text-left whitespace-no-wrap">
-                                                    <thead>
-                                                    <tr>
-                                                        <th class="border border-gray-400 px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-400 text-center" :colspan="Object.keys(memberCategoryList[member.member_id]).length * paymentItemTitle.length">{{ member.member_name }}</th>
-                                                    </tr>
-                                                    <tr>
-                                                        <th class="border border-gray-400 px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-300 text-center" :colspan="5" v-for="(category, categoryKey) in memberCategoryList[member.member_id]" nowrap>{{ category.category_name }}</th>
-                                                    </tr>
-                                                    <tr>
-                                                        <th class="border border-gray-400 px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-200 text-center" v-for="columnCountWholeTable in Object.keys(memberCategoryList[member.member_id]).length * paymentItemTitle.length" nowrap>{{ paymentItemTitle[(columnCountWholeTable - 1) % paymentItemTitle.length] }}</th>
-                                                    </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                    <tr v-for="rowPayment in paymentList[member.member_id].max_payment_count">
-                                                        <td class="border border-gray-400 border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end" v-for="columnCountWholeTable in Object.keys(memberCategoryList[member.member_id]).length * paymentItemTitle.length" nowrap>
-                                                            <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '明細番号'">{{ getCategorizedPaymentId(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment) }}</div>
-                                                            <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '金額'">{{ getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, "amount") }}</div>
-                                                            <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '日付'">{{ getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, "payment_date") }}</div>
-                                                            <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '名目'">{{ getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, "payment_label") }}</div>
-                                                            <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '操作'">(button)</div>
-                                                        </td>
-                                                    </tr>
-                                                    </tbody>
-                                                </table>
+                                                    <table class="table-auto w-full text-left whitespace-no-wrap">
+                                                        <thead>
+                                                            <tr>
+                                                                <th class="border border-gray-400 px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-400 text-center" :colspan="Object.keys(memberCategoryList[member.member_id]).length * paymentItemTitle.length">{{ member.member_name }}</th>
+                                                            </tr>
+                                                            <tr>
+                                                                <th class="border border-gray-400 px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-300 text-center" :colspan="5" v-for="(category, categoryKey) in memberCategoryList[member.member_id]" nowrap>{{ category.category_name }}</th>
+                                                            </tr>
+                                                            <tr>
+                                                                <th class="border border-gray-400 px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-200 text-center" v-for="columnCountWholeTable in Object.keys(memberCategoryList[member.member_id]).length * paymentItemTitle.length" nowrap>{{ paymentItemTitle[(columnCountWholeTable - 1) % paymentItemTitle.length] }}</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody v-if="paymentList[member.member_id] !== undefined">
+                                                            <tr v-for="rowPayment in paymentList[member.member_id].max_payment_count">
+                                                                <td class="border border-gray-400 border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end" v-for="columnCountWholeTable in Object.keys(memberCategoryList[member.member_id]).length * paymentItemTitle.length" nowrap>
+                                                                    <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '明細番号'">{{ getCategorizedPaymentId(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment) }}</div>
+                                                                    <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '金額'">{{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, "amount")) }}<input type="text" class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out" :value="tempItem"></div>
+                                                                    <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '日付'">{{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, "payment_date")) }}<input type="text" class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out" :value="tempItem"></div>
+                                                                    <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '名目'">{{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, "payment_label")) }}<input type="text" class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out" :value="tempItem"></div>
+                                                                    <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '操作'">(button)</div>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                        <tbody v-if="paymentList[member.member_id] === undefined">
+                                                            <tr>
+                                                                <td class="border border-gray-400 border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end" v-for="columnCountWholeTable in Object.keys(memberCategoryList[member.member_id]).length * paymentItemTitle.length" nowrap>
+                                                                    <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '明細番号'">(新規追加)</div>
+                                                                    <input type="text" v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '金額'" class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
+                                                                    <input type="text" v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '日付'" class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
+                                                                    <input type="text" v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '名目'" class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
+                                                                    <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '操作'">(button)</div>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                             </td>
                                         </tr>
