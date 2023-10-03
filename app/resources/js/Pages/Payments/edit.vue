@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import {Head, Link} from '@inertiajs/vue3';
+import {Head, Link, useForm} from '@inertiajs/vue3';
 import {onBeforeMount, ref} from 'vue';
 
 const props = defineProps({
@@ -10,11 +10,23 @@ const props = defineProps({
     'payments' : Array
 })
 
+const form = useForm({
+    summary_ym: props.summary_ym,
+    group_id: "",
+    member_id: "",
+    category_id: "",
+    categorized_payment_id: "",
+    payment_date: "",
+    amount: "",
+    payment_label: ""
+})
+
 onBeforeMount(() => {
     props.members.forEach(member => {
         memberList.value.push({
             member_id: member.member_id,
-            member_name: member.member_name
+            member_name: member.member_name,
+            group_id: member.group_id
         })
     })
 
@@ -120,8 +132,28 @@ const setTempItem = arg => {
 }
 let tempItem
 
-const submitUpdatePayment = ($event, titleName) => {
-    console.log($event, titleName, paymentItemTitle.indexOf(titleName))
+const submitUpdatePayment = ($event, currentTitleName, group_id, member_id, category_id) => {
+    let currentTdElement = $event.target.parentNode.parentNode
+    for (let i=0; i < paymentItemTitle.indexOf(currentTitleName); i++) {
+        currentTdElement = currentTdElement.previousElementSibling
+    }
+
+    form.group_id = group_id
+    form.member_id = member_id
+    form.category_id = category_id
+
+    form.categorized_payment_id = currentTdElement.querySelector('div').innerText
+
+    currentTdElement = currentTdElement.nextElementSibling
+    form.amount = currentTdElement.querySelector('div input').value
+
+    currentTdElement = currentTdElement.nextElementSibling
+    form.payment_date = currentTdElement.querySelector('div input').value
+
+    currentTdElement = currentTdElement.nextElementSibling
+    form.payment_label = currentTdElement.querySelector('div input').value
+
+    console.log(form)
 }
 </script>
 
@@ -164,42 +196,42 @@ const submitUpdatePayment = ($event, titleName) => {
                                                         </thead>
                                                         <tbody v-if="paymentList[member.member_id] !== undefined">
                                                             <tr v-for="rowPayment in paymentList[member.member_id].max_payment_count">
-                                                                    <td class="border border-gray-400 border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end" v-for="columnCountWholeTable in Object.keys(memberCategoryList[member.member_id]).length * paymentItemTitle.length" nowrap>
-                                                                        <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '明細番号'">
-                                                                            {{ getCategorizedPaymentId(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment) }}
-                                                                        </div>
-                                                                        <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '金額'">
-                                                                            {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, "amount")) }}
-                                                                            <input
-                                                                                type="text"
-                                                                                class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-                                                                                :value="tempItem"
-                                                                                @keydown.enter="submitUpdatePayment($event, '金額')">
-                                                                        </div>
-                                                                        <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '日付'">
-                                                                            {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, "payment_date")) }}
-                                                                            <input
-                                                                                type="text"
-                                                                                class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-                                                                                :value="tempItem"
-                                                                                @keydown.enter="submitUpdatePayment($event, '日付')">
-                                                                        </div>
-                                                                        <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '名目'">
-                                                                            {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, "payment_label")) }}
-                                                                            <input
-                                                                                type="text"
-                                                                                class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-                                                                                :value="tempItem"
-                                                                                @keydown.enter="submitUpdatePayment($event, '名目')">
-                                                                        </div>
-                                                                        <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '操作'">
-                                                                            <input
-                                                                                type="button"
-                                                                                class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg"
-                                                                                value="更新"
-                                                                                @click="submitUpdatePayment($event, '操作')">
-                                                                        </div>
-                                                                    </td>
+                                                                <td class="border border-gray-400 border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end" v-for="columnCountWholeTable in Object.keys(memberCategoryList[member.member_id]).length * paymentItemTitle.length" nowrap>
+                                                                    <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '明細番号'">
+                                                                        {{ getCategorizedPaymentId(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment) }}
+                                                                    </div>
+                                                                    <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '金額'">
+                                                                        {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, "amount")) }}
+                                                                        <input
+                                                                            type="text"
+                                                                            class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
+                                                                            :value="tempItem"
+                                                                            @keydown.enter="submitUpdatePayment($event, '金額', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
+                                                                    </div>
+                                                                    <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '日付'">
+                                                                        {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, "payment_date")) }}
+                                                                        <input
+                                                                            type="text"
+                                                                            class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
+                                                                            :value="tempItem"
+                                                                            @keydown.enter="submitUpdatePayment($event, '日付', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
+                                                                    </div>
+                                                                    <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '名目'">
+                                                                        {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, "payment_label")) }}
+                                                                        <input
+                                                                            type="text"
+                                                                            class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
+                                                                            :value="tempItem"
+                                                                            @keydown.enter="submitUpdatePayment($event, '名目', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
+                                                                    </div>
+                                                                    <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '操作'">
+                                                                        <input
+                                                                            type="button"
+                                                                            class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg"
+                                                                            value="更新"
+                                                                            @click="submitUpdatePayment($event, '操作', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
+                                                                    </div>
+                                                                </td>
                                                             </tr>
                                                         </tbody>
                                                         <tbody v-if="paymentList[member.member_id] === undefined">
