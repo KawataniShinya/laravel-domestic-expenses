@@ -136,7 +136,7 @@ let tempItem
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
                         <section class="text-gray-900 body-font">
-                            <div class="container px-5 py-4 mx-auto" style="min-height:500px;">
+                            <div class="container px-5 py-4 mx-auto" style="min-height:500px; max-width:1880px;">
                                 <h1 class="text-3xl">{{ props.summary_ym.substring(0, 4) + '年' + props.summary_ym.substring(4, 6) + '月' }}</h1>
                                 <div class="flex pl-4 mb-4 ml-auto max-w-sm ">
                                     <Link class="flex mx-auto text-black bg-slate-100 border-2 py-2 px-6 focus:outline-none hover:bg-slate-200 rounded" :href="route('payments.index', {})">一覧へ戻る</Link>
