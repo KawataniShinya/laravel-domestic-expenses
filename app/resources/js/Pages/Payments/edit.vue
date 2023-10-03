@@ -10,7 +10,17 @@ const props = defineProps({
     'payments' : Array
 })
 
-const form = useForm({
+const insertForm = useForm({
+    summary_ym: props.summary_ym,
+    group_id: "",
+    member_id: "",
+    category_id: "",
+    payment_date: "",
+    amount: "",
+    payment_label: ""
+})
+
+const updateForm = useForm({
     payment_id: "",
     payment_date: "",
     amount: "",
@@ -144,25 +154,46 @@ const setCategorizedPaymentId = arg => {
 }
 let tempCategorizedPaymentId
 
-const submitUpdatePayment = ($event, currentTitleName, payment_id) => {
-    let currentTdElement = $event.target.parentNode.parentNode
+const sumbitInsertPayment = ($event, currentTitleName, group_id, member_id, category_id) => {
+    let currentTdElement = $event.target.parentNode.parentNode.parentNode
     for (let i=0; i < paymentItemTitle.indexOf(currentTitleName); i++) {
         currentTdElement = currentTdElement.previousElementSibling
     }
 
-    form.payment_id = payment_id
+    insertForm.group_id = group_id
+    insertForm.member_id = member_id
+    insertForm.category_id = category_id
 
     currentTdElement = currentTdElement.nextElementSibling
-    form.amount = currentTdElement.querySelector('div input').value
+    insertForm.amount = currentTdElement.querySelector('div input').value
 
     currentTdElement = currentTdElement.nextElementSibling
-    form.payment_date = currentTdElement.querySelector('div input').value
+    insertForm.payment_date = currentTdElement.querySelector('div input').value
 
     currentTdElement = currentTdElement.nextElementSibling
-    form.payment_label = currentTdElement.querySelector('div input').value
+    insertForm.payment_label = currentTdElement.querySelector('div input').value
 
-    console.log(form)
-    form.put(route('payments.update', { payment: payment_id }), form)
+    console.log(insertForm)
+}
+
+const submitUpdatePayment = ($event, currentTitleName, payment_id) => {
+    let currentTdElement = $event.target.parentNode.parentNode.parentNode
+    for (let i=0; i < paymentItemTitle.indexOf(currentTitleName); i++) {
+        currentTdElement = currentTdElement.previousElementSibling
+    }
+
+    updateForm.payment_id = payment_id
+
+    currentTdElement = currentTdElement.nextElementSibling
+    updateForm.amount = currentTdElement.querySelector('div div input').value
+
+    currentTdElement = currentTdElement.nextElementSibling
+    updateForm.payment_date = currentTdElement.querySelector('div div input').value
+
+    currentTdElement = currentTdElement.nextElementSibling
+    updateForm.payment_label = currentTdElement.querySelector('div div input').value
+
+    updateForm.put(route('payments.update', { payment: payment_id }), updateForm)
 }
 </script>
 
@@ -250,28 +281,28 @@ const submitUpdatePayment = ($event, currentTitleName, payment_id) => {
                                                                             <input
                                                                                 type="text"
                                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-                                                                                @keydown.enter="submitUpdatePayment($event, '金額', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'))">
+                                                                                @keydown.enter="sumbitInsertPayment($event, '金額', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
                                                                         </div>
                                                                         <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '日付'">
                                                                             {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_date')) }}
                                                                             <input
                                                                                 type="text"
                                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-                                                                                @keydown.enter="submitUpdatePayment($event, '日付', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'))">
+                                                                                @keydown.enter="sumbitInsertPayment($event, '日付', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
                                                                         </div>
                                                                         <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '名目'">
                                                                             {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_label')) }}
                                                                             <input
                                                                                 type="text"
                                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-                                                                                @keydown.enter="submitUpdatePayment($event, '名目', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'))">
+                                                                                @keydown.enter="sumbitInsertPayment($event, '名目', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
                                                                         </div>
                                                                         <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '操作'">
                                                                             <input
                                                                                 type="button"
                                                                                 class="flex mx-auto text-white bg-green-500 border-0 py-2 px-8 focus:outline-none hover:bg-green-600 rounded text-lg"
                                                                                 value="追加"
-                                                                                @click="submitUpdatePayment($event, '操作', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'))">
+                                                                                @click="sumbitInsertPayment($event, '操作', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
                                                                         </div>
                                                                     </div>
                                                                 </td>
