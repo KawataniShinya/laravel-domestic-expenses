@@ -115,17 +115,19 @@ const getCategorizedPaymentId = (memberId, categoryId, rowPayment) => {
         const payment = Object.entries(paymentList[memberId][categoryId])[rowPayment - 1]
         const categorizedPaymentId = payment[0]
         if (categorizedPaymentId === 'category_name') {
-            return ""
+            return newLineTitle
         }
         else {
-            return categorizedPaymentId
+            return Number(categorizedPaymentId)
         }
     }
 }
 
+const newLineTitle = "(新規追加)"
+
 const getPaymentProperty = (memberId, categoryId, rowPayment, propertyName) => {
     const categorizedPaymentId = getCategorizedPaymentId(memberId, categoryId, rowPayment)
-    if (categorizedPaymentId === "") {
+    if (typeof categorizedPaymentId !== "number") {
         return ""
     }
     else {
@@ -179,6 +181,7 @@ const submitUpdatePayment = ($event, currentTitleName, payment_id) => {
                                 <h1 class="text-3xl">{{ props.summary_ym.substring(0, 4) + '年' + props.summary_ym.substring(4, 6) + '月' }}</h1>
                                 <div class="flex pl-4 mb-4 ml-auto max-w-sm ">
                                     <Link class="flex mx-auto text-black bg-slate-100 border-2 py-2 px-6 focus:outline-none hover:bg-slate-200 rounded" :href="route('payments.index', {})">一覧へ戻る</Link>
+                                    <Link class="flex mx-auto text-black bg-slate-100 border-2 py-2 px-6 focus:outline-none hover:bg-slate-200 rounded" :href="route('payments.showSummary', { summary_ym: props.summary_ym })">内訳へ戻る</Link>
                                 </div>
                                 <div class="w-full mx-auto overflow-auto border border-gray-400">
                                     <table class="table-auto w-full text-left whitespace-no-wrap my-3 mb-6">
@@ -240,7 +243,7 @@ const submitUpdatePayment = ($event, currentTitleName, payment_id) => {
                                                         <tbody v-if="paymentList[member.member_id] === undefined">
                                                             <tr>
                                                                 <td class="border border-gray-400 border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end" v-for="columnCountWholeTable in Object.keys(memberCategoryList[member.member_id]).length * paymentItemTitle.length" nowrap>
-                                                                    <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '明細番号'">(新規追加)</div>
+                                                                    <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '明細番号'">{{ newLineTitle }}</div>
                                                                     <input type="text" v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '金額'" class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
                                                                     <input type="text" v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '日付'" class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
                                                                     <input type="text" v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '名目'" class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
