@@ -92,7 +92,7 @@ class Payment extends Model
             ->where('payments.group_id', $groupId)
             ->where('payments.summary_ym', $summary_ym)
             ->where('payments.del_flg', false)
-            ->selectRaw('payments.member_id, payments.category_id, member_category_histories.category_name, payments.categorized_payment_id, payments.payment_date, payments.amount, payments.payment_label')
+            ->selectRaw('payments.payment_id, payments.summary_ym, payments.member_id, payments.category_id, member_category_histories.category_name, payments.categorized_payment_id, payments.payment_date, payments.amount, payments.payment_label')
             ->orderByRaw('payments.member_id, payments.category_id, payments.categorized_payment_id');
     }
 

@@ -11,6 +11,7 @@ const props = defineProps({
 })
 
 const form = useForm({
+    payment_id: "",
     summary_ym: props.summary_ym,
     group_id: "",
     member_id: "",
@@ -55,6 +56,7 @@ onBeforeMount(() => {
         const category_id = payment.category_id
         const categorized_payment_id = payment.categorized_payment_id
         const paymentProperty = {
+            payment_id: payment.payment_id,
             payment_date: payment.payment_date,
             amount: payment.amount,
             payment_label: payment.payment_label
@@ -132,12 +134,13 @@ const setTempItem = arg => {
 }
 let tempItem
 
-const submitUpdatePayment = ($event, currentTitleName, group_id, member_id, category_id) => {
+const submitUpdatePayment = ($event, currentTitleName, payment_id, group_id, member_id, category_id) => {
     let currentTdElement = $event.target.parentNode.parentNode
     for (let i=0; i < paymentItemTitle.indexOf(currentTitleName); i++) {
         currentTdElement = currentTdElement.previousElementSibling
     }
 
+    form.payment_id = payment_id
     form.group_id = group_id
     form.member_id = member_id
     form.category_id = category_id
@@ -201,35 +204,35 @@ const submitUpdatePayment = ($event, currentTitleName, group_id, member_id, cate
                                                                         {{ getCategorizedPaymentId(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment) }}
                                                                     </div>
                                                                     <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '金額'">
-                                                                        {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, "amount")) }}
+                                                                        {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'amount')) }}
                                                                         <input
                                                                             type="text"
                                                                             class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
                                                                             :value="tempItem"
-                                                                            @keydown.enter="submitUpdatePayment($event, '金額', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
+                                                                            @keydown.enter="submitUpdatePayment($event, '金額', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'), member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
                                                                     </div>
                                                                     <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '日付'">
-                                                                        {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, "payment_date")) }}
+                                                                        {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_date')) }}
                                                                         <input
                                                                             type="text"
                                                                             class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
                                                                             :value="tempItem"
-                                                                            @keydown.enter="submitUpdatePayment($event, '日付', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
+                                                                            @keydown.enter="submitUpdatePayment($event, '日付', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'), member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
                                                                     </div>
                                                                     <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '名目'">
-                                                                        {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, "payment_label")) }}
+                                                                        {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_label')) }}
                                                                         <input
                                                                             type="text"
                                                                             class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
                                                                             :value="tempItem"
-                                                                            @keydown.enter="submitUpdatePayment($event, '名目', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
+                                                                            @keydown.enter="submitUpdatePayment($event, '名目', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'), member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
                                                                     </div>
                                                                     <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '操作'">
                                                                         <input
                                                                             type="button"
                                                                             class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg"
                                                                             value="更新"
-                                                                            @click="submitUpdatePayment($event, '操作', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
+                                                                            @click="submitUpdatePayment($event, '操作', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'), member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
                                                                     </div>
                                                                 </td>
                                                             </tr>
