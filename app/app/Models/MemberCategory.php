@@ -31,6 +31,14 @@ class MemberCategory extends Model
 {
     use HasFactory;
 
+    protected $table = 'member_categories';
+    protected $fillable = [
+        'member_id',
+        'category_id',
+        'del_flg'
+    ];
+    protected $primaryKey = 'member_category_id';
+
     public function scopeMemberCategoriesByMembers($query, array $memberIDs)
     {
         return MemberCategory::leftJoin('categories', function ($join) {

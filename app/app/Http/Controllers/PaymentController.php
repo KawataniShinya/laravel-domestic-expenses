@@ -289,11 +289,45 @@ class PaymentController extends Controller
      *
      * @param  \App\Http\Requests\UpdatePaymentRequest  $request
      * @param  \App\Models\Payment  $payment
-     * @return \Illuminate\Http\Response
+     * @return \Inertia\Response
      */
     public function update(UpdatePaymentRequest $request, Payment $payment)
     {
-        //
+        DB::beginTransaction();
+
+        try {
+            $payment->payment_date = $request->payment_date;
+            $payment->amount = $request->amount;
+            $payment->payment_label =$request->payment_label;
+            $payment->save();
+
+            $memberHistories = MemberHistory::where('summary_ym', $payment->summary_ym)
+                ->where('group_id', $payment->group_id)
+                ->orderBy('member_id')
+                ->get();
+            $memberIDs = $this->getMemberIDs($memberHistories);
+            $memberCategoryHistories = MemberCategoryHistory::where('summary_ym', $payment->summary_ym)
+                ->whereIn('member_id', $memberIDs)
+                ->groupByRaw('member_id, category_id')
+                ->selectRaw('member_id, category_id, max(category_name) as category_name, max(display_order) as display_order, max(income_flg) as income_flg')
+                ->orderByRaw('member_id, category_id, display_order')
+                ->get();
+            $payments = Payment::paymentsForGroup($payment->group_id, $memberIDs, $payment->summary_ym)->get();
+
+            DB::commit();
+
+            return Inertia::render(
+                'Payments/edit',
+                [
+                    'summary_ym' => (string)$payment->summary_ym,
+                    'members' => $memberHistories,
+                    'memberCategories' => $memberCategoryHistories,
+                    'payments' => $payments
+                ]
+            );
+        } catch (\Exception $e) {
+            DB::rollBack();
+        }
     }
 
     /**

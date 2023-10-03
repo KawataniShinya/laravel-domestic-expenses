@@ -35,4 +35,15 @@ use Illuminate\Database\Eloquent\Model;
 class MemberHistory extends Model
 {
     use HasFactory;
+
+    protected $table = 'member_histories';
+    protected $fillable = [
+        'summary_ym',
+        'group_id',
+        'group_name',
+        'member_id',
+        'member_name',
+        'del_flg'
+    ];
+    protected $primaryKey = 'member_history_id';
 }

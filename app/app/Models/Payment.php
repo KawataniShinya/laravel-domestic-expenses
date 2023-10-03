@@ -47,6 +47,7 @@ class Payment extends Model
 {
     use HasFactory;
 
+    protected $table = 'payments';
     protected $fillable = [
         'summary_ym',
         'group_id',
@@ -59,6 +60,7 @@ class Payment extends Model
         'payment_label',
         'del_flg'
     ];
+    protected $primaryKey = 'payment_id';
 
     public function scopePaymentSummaryByCategoryMember($query, int $groupId, string $summary_ym, bool $income_flg)
     {

@@ -35,6 +35,15 @@ class Member extends Model
 {
     use HasFactory;
 
+    protected $table = 'members';
+    protected $fillable = [
+        'email',
+        'group_id',
+        'member_name',
+        'del_flg'
+    ];
+    protected $primaryKey = 'member_id';
+
     public function scopeGroupMembers($query, int $groupId)
     {
         return Member::leftJoin('groups', function ($join) {
