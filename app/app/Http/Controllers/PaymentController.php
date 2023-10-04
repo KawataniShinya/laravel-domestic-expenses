@@ -69,11 +69,60 @@ class PaymentController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \App\Http\Requests\StorePaymentRequest  $request
-     * @return \Illuminate\Http\Response
+     * @return \Inertia\Response
      */
     public function store(StorePaymentRequest $request)
     {
-        //
+        DB::beginTransaction();
+
+        try {
+            $maxCategorizedPaymentId = Payment::where('summary_ym', $request->summary_ym)
+                ->where('group_id', $request->group_id)
+                ->where('member_id', 10)
+                ->where('category_id', $request->category_id)
+                ->selectRaw('max(categorized_payment_id) as categorized_payment_id')
+                ->first();
+            $nextCategorizedPaymentId = $maxCategorizedPaymentId->categorized_payment_id === "" ? 1 : $maxCategorizedPaymentId->categorized_payment_id + 1;
+
+            Payment::create([
+                'summary_ym' => $request->summary_ym,
+                'group_id' => $request->group_id,
+                'member_id' => $request->member_id,
+                'category_id' => $request->category_id,
+                'categorized_payment_id' => $nextCategorizedPaymentId,
+                'payment_date' => $request->payment_date,
+                'amount' => $request->amount,
+                'payment_label' => $request->payment_label,
+                'del_flg' => false
+            ]);
+
+            $memberHistories = MemberHistory::where('summary_ym', $request->summary_ym)
+                ->where('group_id', $request->group_id)
+                ->orderBy('member_id')
+                ->get();
+            $memberIDs = $this->getMemberIDs($memberHistories);
+            $memberCategoryHistories = MemberCategoryHistory::where('summary_ym', $request->summary_ym)
+                ->whereIn('member_id', $memberIDs)
+                ->groupByRaw('member_id, category_id')
+                ->selectRaw('member_id, category_id, max(category_name) as category_name, max(display_order) as display_order, max(income_flg) as income_flg')
+                ->orderByRaw('member_id, category_id, display_order')
+                ->get();
+            $payments = Payment::paymentsForGroup($request->group_id, $memberIDs, $request->summary_ym)->get();
+
+            DB::commit();
+
+            return Inertia::render(
+                'Payments/edit',
+                [
+                    'summary_ym' => (string)$request->summary_ym,
+                    'members' => $memberHistories,
+                    'memberCategories' => $memberCategoryHistories,
+                    'payments' => $payments
+                ]
+            );
+        } catch (\Exception $e) {
+            DB::rollBack();
+        }
     }
 
     /**

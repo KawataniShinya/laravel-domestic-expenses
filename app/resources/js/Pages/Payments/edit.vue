@@ -173,7 +173,7 @@ const sumbitInsertPayment = ($event, currentTitleName, group_id, member_id, cate
     currentTdElement = currentTdElement.nextElementSibling
     insertForm.payment_label = currentTdElement.querySelector('div input').value
 
-    console.log(insertForm)
+    insertForm.post('/payments', insertForm)
 }
 
 const submitUpdatePayment = ($event, currentTitleName, payment_id) => {
