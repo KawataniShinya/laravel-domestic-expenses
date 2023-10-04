@@ -391,4 +391,11 @@ class PaymentController extends Controller
     {
         //
     }
+
+    public function destroyRelatedPayments(string $summary_ym)
+    {
+        $test = $summary_ym;
+
+        return redirect()->route('payments.index');
+    }
 }
