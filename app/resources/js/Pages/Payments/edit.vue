@@ -100,11 +100,15 @@ onBeforeUpdate(() => {
 
 onUpdated(() => {
     if (props.updatedPayment !== null) {
-        const selector = newLineAmountPrefix + '_' + props.updatedPayment.member_id + '_' + props.updatedPayment.category_id
-        console.log(selector, document.querySelector(selector))
-        // document.querySelector(selector).focus()
+        setTimeout(forcusNewLineAmount, 0)
     }
 })
+
+const forcusNewLineAmount = () => {
+    const selector = '#' + newLineAmountPrefix + '_' + props.updatedPayment.member_id + '_' + props.updatedPayment.category_id
+    document.querySelector(selector).focus()
+    document.querySelector(selector).scrollIntoView()
+}
 
 const memberList = ref([])
 let memberCategoryList = ref()
