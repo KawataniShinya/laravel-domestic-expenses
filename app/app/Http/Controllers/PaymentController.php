@@ -84,7 +84,7 @@ class PaymentController extends Controller
                 ->first();
             $nextCategorizedPaymentId = $maxCategorizedPaymentId->categorized_payment_id === "" ? 1 : $maxCategorizedPaymentId->categorized_payment_id + 1;
 
-            Payment::create([
+            $payment = Payment::create([
                 'summary_ym' => $request->summary_ym,
                 'group_id' => $request->group_id,
                 'member_id' => $request->member_id,
@@ -117,7 +117,8 @@ class PaymentController extends Controller
                     'summary_ym' => (string)$request->summary_ym,
                     'members' => $memberHistories,
                     'memberCategories' => $memberCategoryHistories,
-                    'payments' => $payments
+                    'payments' => $payments,
+                    'updatedPayment' => $payment,
                 ]
             );
         } catch (\Exception $e) {
@@ -133,7 +134,7 @@ class PaymentController extends Controller
      */
     public function show(Payment $payment)
     {
-        //
+        return redirect()->route('payments.editPayments', ['summary_ym' => $payment->summary_ym]);
     }
 
     /**
@@ -371,7 +372,8 @@ class PaymentController extends Controller
                     'summary_ym' => (string)$payment->summary_ym,
                     'members' => $memberHistories,
                     'memberCategories' => $memberCategoryHistories,
-                    'payments' => $payments
+                    'payments' => $payments,
+                    'updatedPayment' => $payment,
                 ]
             );
         } catch (\Exception $e) {

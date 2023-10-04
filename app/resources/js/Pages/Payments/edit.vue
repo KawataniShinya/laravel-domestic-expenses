@@ -7,7 +7,8 @@ const props = defineProps({
     'summary_ym' : String,
     'members': Array,
     'memberCategories' : Array,
-    'payments' : Array
+    'payments' : Array,
+    'updatedPayment' : Array
 })
 
 const insertForm = useForm({
@@ -98,7 +99,11 @@ onBeforeUpdate(() => {
 })
 
 onUpdated(() => {
-    console.log('onUpdated')
+    if (props.updatedPayment !== null) {
+        const selector = newLineAmountPrefix + '_' + props.updatedPayment.member_id + '_' + props.updatedPayment.category_id
+        console.log(selector, document.querySelector(selector))
+        // document.querySelector(selector).focus()
+    }
 })
 
 const memberList = ref([])
