@@ -29,6 +29,7 @@ const updateForm = useForm({
 })
 
 const initBeforeRendering = () => {
+    memberList.value = []
     props.members.forEach(member => {
         memberList.value.push({
             member_id: member.member_id,
@@ -107,7 +108,7 @@ onUpdated(() => {
 const forcusNewLineAmount = () => {
     const selector = '#' + newLineAmountPrefix + '_' + props.updatedPayment.member_id + '_' + props.updatedPayment.category_id
     document.querySelector(selector).focus()
-    document.querySelector(selector).scrollIntoView()
+    document.querySelector(selector).scrollIntoView(false)
 }
 
 const memberList = ref([])
