@@ -78,7 +78,7 @@ class PaymentController extends Controller
         try {
             $maxCategorizedPaymentId = Payment::where('summary_ym', $request->summary_ym)
                 ->where('group_id', $request->group_id)
-                ->where('member_id', 10)
+                ->where('member_id', $request->member_id)
                 ->where('category_id', $request->category_id)
                 ->selectRaw('max(categorized_payment_id) as categorized_payment_id')
                 ->first();
