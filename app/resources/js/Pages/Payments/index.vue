@@ -36,7 +36,12 @@ const format = args => {
 }
 
 const getCreateDate = () => {
-    return `${createDate.value.year}${((createDate.value.month + 1)).toString().padStart(2, "0")}`
+    if (createDate.value === null) {
+        return ""
+    }
+    else {
+        return `${createDate.value.year}${((createDate.value.month + 1)).toString().padStart(2, "0")}`
+    }
 }
 </script>
 
@@ -56,13 +61,18 @@ const getCreateDate = () => {
                     <div class="p-6 text-gray-900">
                         <section class="text-gray-900 body-font">
                             <div class="container px-5 py-24 mx-auto" style="min-height:500px;">
-                                <div class="flex pl-4 mb-4 ml-auto max-w-sm ">
+                                <div class="flex pl-4 mb-4 ml-auto max-w-md ">
                                     <v-row justify="center">
                                         <v-card width="500" height="80" class="mt-16 pa-5">
                                             <Datepicker v-model="createDate" :format="format" monthPicker />
                                         </v-card>
                                     </v-row>
-                                    <Link class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded" :href="route('payments.showSummary', { summary_ym: getCreateDate() })">新規作成</Link>
+                                    <div class="ml-4" v-if="getCreateDate() !== ''">
+                                        <Link class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded" :href="route('payments.showSummary', { summary_ym: getCreateDate() })">新規作成</Link>
+                                    </div>
+                                    <div class="ml-4" v-else>
+                                        <button class="flex mx-auto text-white bg-slate-400 border-0 py-2 px-6 focus:outline-none cursor-default rounded">新規作成</button>
+                                    </div>
                                 </div>
                                 <div class="w-full mx-auto overflow-auto">
                                     <table class="table-auto w-full text-left whitespace-no-wrap">
