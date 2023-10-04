@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import {Head, Link, useForm} from '@inertiajs/vue3';
-import {onBeforeMount, onBeforeUpdate, ref} from 'vue';
+import {onBeforeMount, onBeforeUpdate, onUpdated, ref} from 'vue';
 
 const props = defineProps({
     'summary_ym' : String,
@@ -97,6 +97,10 @@ onBeforeUpdate(() => {
     initBeforeRendering()
 })
 
+onUpdated(() => {
+    console.log('onUpdated')
+})
+
 const memberList = ref([])
 let memberCategoryList = ref()
 let paymentList = ref()
@@ -141,6 +145,7 @@ const getCategorizedPaymentId = (memberId, categoryId, rowPayment) => {
 }
 
 const newLineTitle = "(新規追加)"
+const newLineAmountPrefix = "newLineAmount"
 
 const getPaymentProperty = (memberId, categoryId, rowPayment, propertyName) => {
     const categorizedPaymentId = getCategorizedPaymentId(memberId, categoryId, rowPayment)
@@ -256,7 +261,7 @@ const submitUpdatePayment = ($event, currentTitleName, payment_id) => {
                                                                                 type="text"
                                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
                                                                                 :value="tempItem"
-                                                                                @keydown.enter="submitUpdatePayment($event, '金額', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'))">
+                                                                                @keypress.enter="submitUpdatePayment($event, '金額', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'))">
                                                                         </div>
                                                                         <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '日付'">
                                                                             {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_date')) }}
@@ -264,7 +269,7 @@ const submitUpdatePayment = ($event, currentTitleName, payment_id) => {
                                                                                 type="text"
                                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
                                                                                 :value="tempItem"
-                                                                                @keydown.enter="submitUpdatePayment($event, '日付', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'))">
+                                                                                @keypress.enter="submitUpdatePayment($event, '日付', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'))">
                                                                         </div>
                                                                         <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '名目'">
                                                                             {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_label')) }}
@@ -272,7 +277,7 @@ const submitUpdatePayment = ($event, currentTitleName, payment_id) => {
                                                                                 type="text"
                                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
                                                                                 :value="tempItem"
-                                                                                @keydown.enter="submitUpdatePayment($event, '名目', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'))">
+                                                                                @keypress.enter="submitUpdatePayment($event, '名目', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'))">
                                                                         </div>
                                                                         <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '操作'">
                                                                             <input
@@ -286,23 +291,24 @@ const submitUpdatePayment = ($event, currentTitleName, payment_id) => {
                                                                         <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '金額'">
                                                                             {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'amount')) }}
                                                                             <input
+                                                                                v-bind:id="newLineAmountPrefix + '_' + member.member_id + '_' + getCategoryId(member.member_id, columnCountWholeTable)"
                                                                                 type="text"
                                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-                                                                                @keydown.enter="sumbitInsertPayment($event, '金額', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
+                                                                                @keypress.enter="sumbitInsertPayment($event, '金額', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
                                                                         </div>
                                                                         <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '日付'">
                                                                             {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_date')) }}
                                                                             <input
                                                                                 type="text"
                                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-                                                                                @keydown.enter="sumbitInsertPayment($event, '日付', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
+                                                                                @keypress.enter="sumbitInsertPayment($event, '日付', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
                                                                         </div>
                                                                         <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '名目'">
                                                                             {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_label')) }}
                                                                             <input
                                                                                 type="text"
                                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-                                                                                @keydown.enter="sumbitInsertPayment($event, '名目', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
+                                                                                @keypress.enter="sumbitInsertPayment($event, '名目', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
                                                                         </div>
                                                                         <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '操作'">
                                                                             <input
