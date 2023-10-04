@@ -394,8 +394,40 @@ class PaymentController extends Controller
 
     public function destroyRelatedPayments(string $summary_ym)
     {
-        $test = $summary_ym;
+        DB::beginTransaction();
 
-        return redirect()->route('payments.index');
+        try {
+            $authMember = AuthMember::query()->get();
+            $groupId = $authMember[0]->group_id;
+
+            $memberHistories = MemberHistory::where('summary_ym', $summary_ym)
+                ->where('group_id', $groupId)
+                ->orderBy('member_id')
+                ->get();
+            $memberIDs = $this->getMemberIDs($memberHistories);
+
+            MemberCategoryHistory::where('summary_ym', $summary_ym)
+                ->whereIn('member_id', $memberIDs)
+                ->delete();
+
+            MemberHistory::where('summary_ym', $summary_ym)
+                ->where('group_id', $groupId)
+                ->delete();
+
+            $payments = Payment::where('summary_ym', $summary_ym)
+                ->where('group_id', $groupId)
+                ->whereIn('member_id', $memberIDs)
+                ->get();
+            foreach ($payments as $payment) {
+                $payment['del_flg'] = true;
+                $payment->save();
+            }
+
+            DB::commit();
+
+            return redirect()->route('payments.index');
+        } catch (\Exception $e) {
+            DB::rollBack();
+        }
     }
 }
