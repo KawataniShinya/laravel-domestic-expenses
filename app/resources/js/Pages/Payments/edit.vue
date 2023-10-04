@@ -116,20 +116,27 @@ const getCategoryId = (memberId, columnCountWholeTable) => {
     return Object.keys(memberCategoryList[memberId])[itemOffset]
 }
 
+const getDisplayRowCount = memberId => {
+    return paymentList[memberId] === undefined ? 1 : paymentList[memberId].max_payment_count
+}
+
 const getCategorizedPaymentId = (memberId, categoryId, rowPayment) => {
-    if (paymentList[memberId][categoryId] === undefined  ||
-        Object.entries(paymentList[memberId][categoryId])[rowPayment - 1] === undefined) {
-        return ""
-    }
-    else {
-        const payment = Object.entries(paymentList[memberId][categoryId])[rowPayment - 1]
-        const categorizedPaymentId = payment[0]
-        if (categorizedPaymentId === 'category_name') {
+    if (paymentList[memberId] === undefined || paymentList[memberId][categoryId] === undefined) {
+        if (rowPayment === 1) {
             return newLineTitle
         }
         else {
-            return Number(categorizedPaymentId)
+            return ""
         }
+    }
+    else if (Object.entries(paymentList[memberId][categoryId])[rowPayment - 1] === undefined) {
+        return ""
+    }
+    else if ((Object.entries(paymentList[memberId][categoryId])[rowPayment - 1])[0] === 'category_name') {
+        return newLineTitle
+    }
+    else {
+        return Number((Object.entries(paymentList[memberId][categoryId])[rowPayment - 1])[0])
     }
 }
 
@@ -235,8 +242,8 @@ const submitUpdatePayment = ($event, currentTitleName, payment_id) => {
                                                                 <th class="border border-gray-400 px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-200 text-center" v-for="columnCountWholeTable in Object.keys(memberCategoryList[member.member_id]).length * paymentItemTitle.length" nowrap>{{ paymentItemTitle[(columnCountWholeTable - 1) % paymentItemTitle.length] }}</th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody v-if="paymentList[member.member_id] !== undefined">
-                                                            <tr v-for="rowPayment in paymentList[member.member_id].max_payment_count">
+                                                        <tbody>
+                                                            <tr v-for="rowPayment in getDisplayRowCount(member.member_id)">
                                                                 <td class="border border-gray-400 border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end" v-for="columnCountWholeTable in Object.keys(memberCategoryList[member.member_id]).length * paymentItemTitle.length" nowrap>
                                                                     <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '明細番号'">
                                                                         {{ setCategorizedPaymentId(getCategorizedPaymentId(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment)) }}
@@ -304,38 +311,6 @@ const submitUpdatePayment = ($event, currentTitleName, payment_id) => {
                                                                                 value="追加"
                                                                                 @click="sumbitInsertPayment($event, '操作', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
                                                                         </div>
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                        </tbody>
-                                                        <tbody v-if="paymentList[member.member_id] === undefined">
-                                                            <tr>
-                                                                <td class="border border-gray-400 border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end" v-for="columnCountWholeTable in Object.keys(memberCategoryList[member.member_id]).length * paymentItemTitle.length" nowrap>
-                                                                    <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '明細番号'">{{ newLineTitle }}</div>
-                                                                    <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '金額'">
-                                                                        <input
-                                                                            type="text"
-                                                                            class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-                                                                            @keydown.enter="submitUpdatePayment($event, '金額', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'))">
-                                                                    </div>
-                                                                    <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '日付'">
-                                                                        <input
-                                                                            type="text"
-                                                                            class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-                                                                            @keydown.enter="submitUpdatePayment($event, '日付', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'))">
-                                                                    </div>
-                                                                    <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '名目'">
-                                                                        <input
-                                                                            type="text"
-                                                                            class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-                                                                            @keydown.enter="submitUpdatePayment($event, '名目', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'))">
-                                                                    </div>
-                                                                    <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '操作'">
-                                                                        <input
-                                                                            type="button"
-                                                                            class="flex mx-auto text-white bg-green-500 border-0 py-2 px-8 focus:outline-none hover:bg-green-600 rounded text-lg"
-                                                                            value="追加"
-                                                                            @click="submitUpdatePayment($event, '操作', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'))">
                                                                     </div>
                                                                 </td>
                                                             </tr>
