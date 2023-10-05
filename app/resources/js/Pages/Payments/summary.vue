@@ -95,7 +95,7 @@ let sumPaymentIncome = ref(0)
 let paymentsExpenseArray = ref()
 let sumPaymentExpense = ref(0)
 
-const commaSeparateOrBlank = arg => {
+const separateCommaOrBlank = arg => {
     if (arg === "") {
         return ""
     }
@@ -172,25 +172,25 @@ const deletePaymentsRelatedHistory = () => {
                                         <tr v-for="(category, categoryIndex) in categoryIncomeList" :key="categoryIncomeList.category_id">
                                             <th class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end ">{{ category.category_name }}</th>
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end" v-for="(member, memberIndex) in memberList" :key="memberList.member_id">
-                                                {{ commaSeparateOrBlank(paymentsIncomeArray[categoryIndex][memberIndex]) }}
+                                                {{ separateCommaOrBlank(paymentsIncomeArray[categoryIndex][memberIndex]) }}
                                             </td>
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-amber-100">
-                                                {{ commaSeparateOrBlank(sumHorizontal(paymentsIncomeArray[categoryIndex])) }}
+                                                {{ separateCommaOrBlank(sumHorizontal(paymentsIncomeArray[categoryIndex])) }}
                                             </td>
                                         </tr>
                                         <tr>
                                             <th class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-amber-100">合計</th>
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-amber-100" v-for="(member, memberIndex) in memberList" :key="memberList.member_id">
-                                                {{ commaSeparateOrBlank(sumVertical(paymentsIncomeArray, memberIndex)) }}
+                                                {{ separateCommaOrBlank(sumVertical(paymentsIncomeArray, memberIndex)) }}
                                             </td>
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-amber-100">
-                                                {{ commaSeparateOrBlank(sumPaymentIncome) }}
+                                                {{ separateCommaOrBlank(sumPaymentIncome) }}
                                             </td>
                                         </tr>
                                         <tr>
                                             <th class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-yellow-200">(収入-先月支出)</th>
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-yellow-200" v-for="(member, memberIndex) in memberList" :key="memberList.member_id">
-                                                {{ commaSeparateOrBlank(sumVertical(paymentsIncomeArray, memberIndex) - expenseLastList[memberIndex]) }}
+                                                {{ separateCommaOrBlank(sumVertical(paymentsIncomeArray, memberIndex) - expenseLastList[memberIndex]) }}
                                             </td>
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-yellow-200"></td>
                                         </tr>
@@ -198,26 +198,26 @@ const deletePaymentsRelatedHistory = () => {
                                         <tr v-for="(category, categoryIndex) in categoryExpneseList" :key="categoryExpneseList.category_id">
                                             <th class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end">{{ category.category_name }}</th>
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end" v-for="(member, memberIndex) in memberList" :key="memberList.member_id">
-                                                {{ commaSeparateOrBlank(paymentsExpenseArray[categoryIndex][memberIndex]) }}
+                                                {{ separateCommaOrBlank(paymentsExpenseArray[categoryIndex][memberIndex]) }}
                                             </td>
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-amber-100">
-                                                {{ commaSeparateOrBlank(sumHorizontal(paymentsExpenseArray[categoryIndex])) }}
+                                                {{ separateCommaOrBlank(sumHorizontal(paymentsExpenseArray[categoryIndex])) }}
                                             </td>
                                         </tr>
                                         <tr>
                                             <th class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-amber-100">合計</th>
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-amber-100" v-for="(member, memberIndex) in memberList" :key="memberList.member_id">
-                                                {{ commaSeparateOrBlank(sumVertical(paymentsExpenseArray, memberIndex)) }}
+                                                {{ separateCommaOrBlank(sumVertical(paymentsExpenseArray, memberIndex)) }}
                                             </td>
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-amber-100">
-                                                {{ commaSeparateOrBlank(sumPaymentExpense) }}
+                                                {{ separateCommaOrBlank(sumPaymentExpense) }}
                                             </td>
                                         </tr>
                                         <tr class="border-t-4">
                                             <th class="border-t-2 border-b-2 border-gray-200 px-4 py-3 bg-orange-100">(収支)</th>
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-orange-100" v-for="(member, memberIndex) in memberList" :key="memberList.member_id"></td>
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-orange-100">
-                                                {{ commaSeparateOrBlank(sumPaymentIncome - sumPaymentExpense) }}
+                                                {{ separateCommaOrBlank(sumPaymentIncome - sumPaymentExpense) }}
                                             </td>
                                         </tr>
                                         </tbody>
