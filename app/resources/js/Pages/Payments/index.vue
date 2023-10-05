@@ -64,7 +64,13 @@ const getCreateDate = () => {
                                 <div class="flex pl-4 mb-4 ml-auto max-w-md ">
                                     <v-row justify="center">
                                         <v-card width="500" height="80" class="mt-16 pa-5">
-                                            <Datepicker v-model="createDate" :format="format" monthPicker />
+                                            <Datepicker
+                                                v-model="createDate"
+                                                :format="format"
+                                                monthPicker
+                                                locale="jp"
+                                                auto-apply
+                                            />
                                         </v-card>
                                     </v-row>
                                     <div class="ml-4" v-if="getCreateDate() !== ''">
