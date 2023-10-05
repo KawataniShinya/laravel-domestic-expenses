@@ -74,7 +74,7 @@ const getCreateDate = () => {
                                         </v-card>
                                     </v-row>
                                     <div class="ml-4" v-if="getCreateDate() !== ''">
-                                        <Link class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded" :href="route('payments.showSummary', { summary_ym: getCreateDate() })">新規作成</Link>
+                                        <Link class="flex mx-auto text-white bg-green-500 border-0 py-2 px-6 focus:outline-none hover:bg-green-600 rounded" :href="route('payments.showSummary', { summary_ym: getCreateDate() })">新規作成</Link>
                                     </div>
                                     <div class="ml-4" v-else>
                                         <button class="flex mx-auto text-white bg-slate-400 border-0 py-2 px-6 focus:outline-none cursor-default rounded">新規作成</button>

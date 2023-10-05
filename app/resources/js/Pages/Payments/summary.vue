@@ -155,8 +155,9 @@ const deletePaymentsRelatedHistory = () => {
                                 <h1 class="text-3xl">{{ props.summary_ym.substring(0, 4) + '年' + props.summary_ym.substring(4, 6) + '月' }}</h1>
                                 <div class="flex pl-4 mb-4 ml-auto max-w-sm ">
                                     <Link class="flex mx-auto text-black bg-slate-100 border-2 py-2 px-6 focus:outline-none hover:bg-slate-200 rounded" :href="route('payments.index', {})">一覧へ戻る</Link>
-                                    <Link class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded" :href="route('payments.editPayments', {summary_ym: props.summary_ym})">編集</Link>
-                                    <button class="flex mx-auto text-white bg-red-500 border-0 py-2 px-6 focus:outline-none hover:bg-red-600 rounded" @click="deletePaymentsRelatedHistory()">削除</button>
+                                    <Link v-if="props.members.length !== 0 || props.categories.length !== 0" class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded" :href="route('payments.editPayments', {summary_ym: props.summary_ym})">編集</Link>
+                                    <Link v-else class="flex mx-auto text-white bg-green-500 border-0 py-2 px-6 focus:outline-none hover:bg-green-600 rounded" :href="route('payments.editPayments', {summary_ym: props.summary_ym})">新規</Link>
+                                    <button v-if="props.members.length !== 0 || props.categories.length !== 0" class="flex mx-auto text-white bg-red-500 border-0 py-2 px-6 focus:outline-none hover:bg-red-600 rounded" @click="deletePaymentsRelatedHistory()">削除</button>
                                 </div>
                                 <div class="w-full mx-auto overflow-auto">
                                     <table class="table-auto w-full text-left whitespace-no-wrap">
