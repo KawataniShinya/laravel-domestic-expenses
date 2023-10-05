@@ -95,12 +95,15 @@ let sumPaymentIncome = ref(0)
 let paymentsExpenseArray = ref()
 let sumPaymentExpense = ref(0)
 
-const commaSeparateOrBlank = args => {
-    if (args !== "") {
-        return Number(args).toLocaleString()
+const commaSeparateOrBlank = arg => {
+    if (arg === "") {
+        return ""
+    }
+    else if (isNaN(arg)) {
+        return arg
     }
     else {
-        return "";
+        return Number(arg).toLocaleString()
     }
 }
 

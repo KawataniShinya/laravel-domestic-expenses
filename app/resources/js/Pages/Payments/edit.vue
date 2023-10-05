@@ -116,13 +116,28 @@ let memberCategoryList = ref()
 let paymentList = ref()
 const paymentItemTitle = ['明細番号', '金額', '日付', '名目', '操作']
 
-const commaSeparateOrBlank = args => {
-    if (args !== "") {
-        return Number(args).toLocaleString()
+const insertCommaOnEvent = ($event) => {
+    $event.target.value = commaSeparateOrBlank($event.target.value)
+}
+
+const commaSeparateOrBlank = arg => {
+    if (arg === "") {
+        return ""
+    }
+    else if (isNaN(arg)) {
+        return arg
     }
     else {
-        return "";
+        return Number(arg).toLocaleString()
     }
+}
+
+const removeCommaOnEvent = ($event) => {
+    $event.target.value = removeComma($event.target.value)
+}
+
+const removeComma = arg => {
+    return String(arg).replace(',', '')
 }
 
 const getCategoryId = (memberId, columnCountWholeTable) => {
@@ -187,7 +202,7 @@ const sumbitInsertPayment = ($event, currentTitleName, group_id, member_id, cate
     insertForm.category_id = category_id
 
     currentTdElement = currentTdElement.nextElementSibling
-    insertForm.amount = currentTdElement.querySelector('div input').value
+    insertForm.amount = removeComma(currentTdElement.querySelector('div input').value)
 
     currentTdElement = currentTdElement.nextElementSibling
     insertForm.payment_date = currentTdElement.querySelector('div input').value
@@ -207,7 +222,7 @@ const submitUpdatePayment = ($event, currentTitleName, payment_id) => {
     updateForm.payment_id = payment_id
 
     currentTdElement = currentTdElement.nextElementSibling
-    updateForm.amount = currentTdElement.querySelector('div div input').value
+    updateForm.amount = removeComma(currentTdElement.querySelector('div div input').value)
 
     currentTdElement = currentTdElement.nextElementSibling
     updateForm.payment_date = currentTdElement.querySelector('div div input').value
@@ -266,12 +281,14 @@ const submitUpdatePayment = ($event, currentTitleName, payment_id) => {
                                                                     </div>
                                                                     <div v-else-if="typeof tempCategorizedPaymentId === 'number'">
                                                                         <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '金額'">
-                                                                            {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'amount')) }}
+                                                                            {{ setTempItem(commaSeparateOrBlank(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'amount'))) }}
                                                                             <input
                                                                                 type="text"
                                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
                                                                                 :value="tempItem"
-                                                                                @keypress.enter="submitUpdatePayment($event, '金額', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'))">
+                                                                                @keypress.enter="submitUpdatePayment($event, '金額', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'))"
+                                                                                @focus="removeCommaOnEvent($event)"
+                                                                                @blur="insertCommaOnEvent($event)">
                                                                         </div>
                                                                         <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '日付'">
                                                                             {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_date')) }}
@@ -299,12 +316,14 @@ const submitUpdatePayment = ($event, currentTitleName, payment_id) => {
                                                                     </div>
                                                                     <div v-else-if="tempCategorizedPaymentId === newLineTitle">
                                                                         <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '金額'">
-                                                                            {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'amount')) }}
+                                                                            {{ setTempItem(commaSeparateOrBlank(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'amount'))) }}
                                                                             <input
                                                                                 v-bind:id="newLineAmountPrefix + '_' + member.member_id + '_' + getCategoryId(member.member_id, columnCountWholeTable)"
                                                                                 type="text"
                                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-                                                                                @keypress.enter="sumbitInsertPayment($event, '金額', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
+                                                                                @keypress.enter="sumbitInsertPayment($event, '金額', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))"
+                                                                                @focus="removeCommaOnEvent($event)"
+                                                                                @blur="insertCommaOnEvent($event)">
                                                                         </div>
                                                                         <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '日付'">
                                                                             {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_date')) }}
