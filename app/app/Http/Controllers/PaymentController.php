@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePaymentRequest;
 use App\Http\Requests\UpdatePaymentRequest;
+use App\Http\Services\MemberService;
+use App\Http\Services\PaymentService;
 use App\Models\AuthMember;
-use App\Models\Category;
 use App\Models\Member;
 use App\Models\MemberCategory;
 use App\Models\MemberCategoryHistory;
@@ -15,10 +16,18 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
-use function PHPUnit\Framework\isEmpty;
 
 class PaymentController extends Controller
 {
+    private MemberService $memberService;
+    private PaymentService $paymentService;
+
+    public function __construct(MemberService $memberService, PaymentService $paymentService)
+    {
+        $this->memberService = $memberService;
+        $this->paymentService = $paymentService;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -26,8 +35,10 @@ class PaymentController extends Controller
      */
     public function index()
     {
-        $authMember = AuthMember::query()->get();
-        $groupId = $authMember[0]->group_id;
+        $groupId = $this->memberService->getGroupIdByAuth();
+
+//        $authMember = AuthMember::query()->get();
+//        $groupId = $authMember[0]->group_id;
 
         $payments = Payment::leftJoin('member_category_histories', function ($join) {
                 $join
