@@ -4,8 +4,15 @@ namespace App\Http\Services;
 
 class PaymentServiceImpl implements PaymentService
 {
-    public function getHello()
+    private PaymentRepository $paymentRepository;
+
+    public function __construct(PaymentRepository $paymentRepository)
     {
-        return 'Hello';
+        $this->paymentRepository = $paymentRepository;
+    }
+
+    public function getPaymentTotalMonthly(int $groupId)
+    {
+        return $this->paymentRepository->selectPaymentTotalMonthlyInGroup($groupId);
     }
 }
