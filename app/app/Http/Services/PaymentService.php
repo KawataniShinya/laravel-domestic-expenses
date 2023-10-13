@@ -2,7 +2,12 @@
 
 namespace App\Http\Services;
 
+use App\Http\Services\DTO\PaymentService\PaymentTotalMonthly;
+
 interface PaymentService
 {
-    public function getPaymentTotalMonthly(int $groupId);
+    /**
+     * @return array<PaymentTotalMonthly>
+     */
+    public function getPaymentTotalMonthly(): array;
 }

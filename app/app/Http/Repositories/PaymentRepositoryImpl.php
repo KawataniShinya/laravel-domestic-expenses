@@ -2,11 +2,12 @@
 
 namespace App\Http\Repositories;
 
+use App\Http\Services\DTO\PaymentService\PaymentTotalMonthly;
 use App\Models\Payment;
 
 class PaymentRepositoryImpl implements \App\Http\Services\PaymentRepository
 {
-    public function selectPaymentTotalMonthlyInGroup(int $groupId)
+    public function selectPaymentTotalMonthlyInGroup(int $groupId): array
     {
         $payments = Payment::leftJoin('member_category_histories', function ($join) {
                 $join
@@ -25,6 +26,17 @@ class PaymentRepositoryImpl implements \App\Http\Services\PaymentRepository
                 ')
             ->orderBy('payments.summary_ym', 'desc')
             ->get();
-        return $payments;
+
+        $paymentsDTOArray = [];
+        foreach ($payments as $payment) {
+            $paymentsDTOArray[] = new PaymentTotalMonthly(
+                $payment->summary_ym,
+                $payment->income,
+                $payment->expense,
+                $payment->total
+            );
+        }
+
+        return $paymentsDTOArray;
     }
 }

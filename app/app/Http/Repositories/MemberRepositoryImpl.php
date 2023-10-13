@@ -2,12 +2,13 @@
 
 namespace App\Http\Repositories;
 
+use App\Http\Services\DTO\PaymentService\AuthMember;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class MemberRepositoryImpl implements \App\Http\Services\MemberRepository
 {
-    public function selectMemberByAuth()
+    public function selectMemberByAuth(): AuthMember
     {
         $email = Auth::user()->email;
         $authMember = User::leftJoin('members', function ($join) {
@@ -30,6 +31,16 @@ class MemberRepositoryImpl implements \App\Http\Services\MemberRepository
                 groups.group_name
             ')
             ->first();
-        return $authMember;
+
+        $authMemberDTO = new AuthMember(
+            $authMember->user_id,
+            $authMember->email,
+            $authMember->member_id,
+            $authMember->member_name,
+            $authMember->group_id,
+            $authMember->group_name
+        );
+
+        return $authMemberDTO;
     }
 }

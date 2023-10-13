@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePaymentRequest;
 use App\Http\Requests\UpdatePaymentRequest;
-use App\Http\Services\MemberService;
 use App\Http\Services\PaymentService;
 use App\Models\AuthMember;
 use App\Models\Member;
@@ -16,54 +15,39 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class PaymentController extends Controller
 {
-    private MemberService $memberService;
     private PaymentService $paymentService;
 
-    public function __construct(MemberService $memberService, PaymentService $paymentService)
+    public function __construct(PaymentService $paymentService)
     {
-        $this->memberService = $memberService;
         $this->paymentService = $paymentService;
     }
 
     /**
      * Display a listing of the resource.
      *
-     * @return \Inertia\Response
+     * @return Response
      */
-    public function index()
+    public function index(): Response
     {
-        $groupId = $this->memberService->getGroupIdByAuth();
-
-//        $authMember = AuthMember::query()->get();
-//        $groupId = $authMember[0]->group_id;
-
-        $payments = $this->paymentService->getPaymentTotalMonthly($groupId);
-
-//        $payments = Payment::leftJoin('member_category_histories', function ($join) {
-//                $join
-//                    ->on('payments.summary_ym', '=', 'member_category_histories.summary_ym')
-//                    ->on('payments.category_id', '=', 'member_category_histories.category_id')
-//                    ->on('payments.member_id', '=', 'member_category_histories.member_id');
-//            })
-//            ->where('payments.group_id', $groupId)
-//            ->where('payments.del_flg', false)
-//            ->groupBy('payments.summary_ym')
-//            ->selectRaw('
-//                    payments.summary_ym,
-//                    sum(case when member_category_histories.income_flg=1 then payments.amount else 0 end) as income,
-//                    sum(case when member_category_histories.income_flg=0 then payments.amount else 0 end) as expense,
-//                    sum(case when member_category_histories.income_flg=1 then payments.amount else payments.amount * (-1) end) as total
-//                ')
-//            ->orderBy('payments.summary_ym', 'desc')
-//            ->get();
+        $payments = $this->paymentService->getPaymentTotalMonthly();
+        $paymentArray = [];
+        foreach ($payments as $payment) {
+            $paymentArray[] = [
+                'summary_ym' => $payment->getSummaryYm(),
+                'income' => $payment->getIncome(),
+                'expense' => $payment->getExpense(),
+                'total' => $payment->getTotal()
+            ];
+        }
 
         return Inertia::render(
             'Payments/index',
             [
-                'payments' => $payments
+                'payments' => $paymentArray
             ]
         );
     }
@@ -82,7 +66,7 @@ class PaymentController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \App\Http\Requests\StorePaymentRequest  $request
-     * @return \Inertia\Response
+     * @return Response
      */
     public function store(StorePaymentRequest $request)
     {
@@ -154,7 +138,7 @@ class PaymentController extends Controller
      * Display the specified resource.
      *
      * @param  string  $summary_ym
-     * @return \Inertia\Response
+     * @return Response
      */
     public function showSummary(string $summary_ym)
     {
@@ -215,7 +199,7 @@ class PaymentController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param  string  $summary_ym
-     * @return \Inertia\Response
+     * @return Response
      */
     public function editPayments(string $summary_ym)
     {
@@ -352,7 +336,7 @@ class PaymentController extends Controller
      *
      * @param  \App\Http\Requests\UpdatePaymentRequest  $request
      * @param  \App\Models\Payment  $payment
-     * @return \Inertia\Response
+     * @return Response
      */
     public function update(UpdatePaymentRequest $request, Payment $payment)
     {

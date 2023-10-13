@@ -5,8 +5,6 @@ namespace App\Providers;
 use App\Http\Repositories\MemberRepositoryImpl;
 use App\Http\Repositories\PaymentRepositoryImpl;
 use App\Http\Services\MemberRepository;
-use App\Http\Services\MemberService;
-use App\Http\Services\MemberServiceImpl;
 use App\Http\Services\PaymentRepository;
 use App\Http\Services\PaymentService;
 use App\Http\Services\PaymentServiceImpl;
@@ -21,11 +19,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->bind(MemberService::class, function ($app) {
-            return new MemberServiceImpl(new MemberRepositoryImpl());
-        });
         $this->app->bind(PaymentService::class, function ($app) {
-            return new PaymentServiceImpl(new PaymentRepositoryImpl());
+            return new PaymentServiceImpl(
+                new MemberRepositoryImpl(),
+                new PaymentRepositoryImpl()
+            );
         });
 
         $this->app->bind(MemberRepository::class, function ($app) {return new MemberRepositoryImpl();});

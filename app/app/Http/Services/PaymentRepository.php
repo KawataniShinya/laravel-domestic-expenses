@@ -2,7 +2,13 @@
 
 namespace App\Http\Services;
 
+use App\Http\Services\DTO\PaymentService\PaymentTotalMonthly;
+
 interface PaymentRepository
 {
-    public function selectPaymentTotalMonthlyInGroup(int $groupId);
+    /**
+     * @param int $groupId
+     * @return array<PaymentTotalMonthly>
+     */
+    public function selectPaymentTotalMonthlyInGroup(int $groupId): array;
 }
