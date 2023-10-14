@@ -5,19 +5,19 @@ namespace App\Http\Services\DTO\PaymentService;
 class AuthMember
 {
     private int $user_id;
-    private string $email;
-    private int $member_id;
-    private string $member_name;
-    private int $group_id;
-    private string $group_name;
+    private string|null $email;
+    private int|null $member_id;
+    private string|null $member_name;
+    private int|null $group_id;
+    private string|null $group_name;
 
     public function __construct(
         int $user_id,
-        string $email,
-        int $member_id,
-        string $member_name,
-        int $group_id,
-        string $group_name
+        string|null $email,
+        int|null $member_id,
+        string|null $member_name,
+        int|null $group_id,
+        string|null $group_name
     )
     {
         $this->user_id = $user_id;
@@ -28,32 +28,50 @@ class AuthMember
         $this->group_name = $group_name;
     }
 
-    public function getUserId()
+    /**
+     * @return int
+     */
+    public function getUserId(): int
     {
         return $this->user_id;
     }
 
-    public function getEmail()
+    /**
+     * @return string|null
+     */
+    public function getEmail(): ?string
     {
         return $this->email;
     }
 
-    public function getMemberId()
+    /**
+     * @return int|null
+     */
+    public function getMemberId(): ?int
     {
         return $this->member_id;
     }
 
-    public function getMemberName()
+    /**
+     * @return string|null
+     */
+    public function getMemberName(): ?string
     {
         return $this->member_name;
     }
 
-    public function getGroupId()
+    /**
+     * @return int|null
+     */
+    public function getGroupId(): ?int
     {
         return $this->group_id;
     }
 
-    public function getGroupName()
+    /**
+     * @return string|null
+     */
+    public function getGroupName(): ?string
     {
         return $this->group_name;
     }

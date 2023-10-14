@@ -5,15 +5,15 @@ namespace App\Http\Services\DTO\PaymentService;
 class PaymentTotalMonthly
 {
     private int $summary_ym;
-    private int $income;
-    private int $expense;
-    private int $total;
+    private int|null $income;
+    private int|null $expense;
+    private int|null $total;
 
     public function __construct(
         int $summary_ym,
-        int $income,
-        int $expense,
-        int $total
+        int|null $income,
+        int|null $expense,
+        int|null $total
     )
     {
         $this->summary_ym = $summary_ym;
@@ -22,22 +22,34 @@ class PaymentTotalMonthly
         $this->total = $total;
     }
 
-    public function getSummaryYm()
+    /**
+     * @return int
+     */
+    public function getSummaryYm(): int
     {
         return $this->summary_ym;
     }
 
-    public function getIncome()
+    /**
+     * @return int|null
+     */
+    public function getIncome(): ?int
     {
         return $this->income;
     }
 
-    public function getExpense()
+    /**
+     * @return int|null
+     */
+    public function getExpense(): ?int
     {
         return $this->expense;
     }
 
-    public function getTotal()
+    /**
+     * @return int|null
+     */
+    public function getTotal(): ?int
     {
         return $this->total;
     }

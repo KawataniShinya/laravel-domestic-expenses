@@ -70,64 +70,96 @@ class PaymentController extends Controller
      */
     public function store(StorePaymentRequest $request)
     {
-        DB::beginTransaction();
+        $insertedPayment = $this->paymentService->storePayment(
+            $request->summary_ym,
+            $request->group_id,
+            $request->member_id,
+            $request->category_id,
+            $request->payment_date,
+            $request->amount,
+            $request->payment_label
+        );
 
-        try {
-            $maxCategorizedPaymentId = Payment::where('summary_ym', $request->summary_ym)
-                ->where('group_id', $request->group_id)
-                ->where('member_id', $request->member_id)
-                ->where('category_id', $request->category_id)
-                ->selectRaw('max(categorized_payment_id) as categorized_payment_id')
-                ->first();
-            $nextCategorizedPaymentId = $maxCategorizedPaymentId->categorized_payment_id === "" ? 1 : $maxCategorizedPaymentId->categorized_payment_id + 1;
+        $insertedPaymentArray = [
+            "payment_id" => $insertedPayment->getPaymentId(),
+            "summary_ym" => $insertedPayment->getSummaryYm(),
+            "group_id" => $insertedPayment->getGroupId(),
+            "member_id" => $insertedPayment->getMemberId(),
+            "category_id" => $insertedPayment->getCategoryId(),
+            "categorized_payment_id" => $insertedPayment->getCategorizedPaymentId(),
+            "payment_date" => $insertedPayment->getPaymentDate(),
+            "amount" => $insertedPayment->getAmount(),
+            "payment_label" => $insertedPayment->getPaymentLabel(),
+            "del_flg" => $insertedPayment->isDelFlg(),
+            "created_at" => $insertedPayment->getCreatedAt(),
+            "updated_at" => $insertedPayment->getUpdatedAt()
+        ];
 
-            $payment = Payment::create([
-                'summary_ym' => $request->summary_ym,
-                'group_id' => $request->group_id,
-                'member_id' => $request->member_id,
-                'category_id' => $request->category_id,
-                'categorized_payment_id' => $nextCategorizedPaymentId,
-                'payment_date' => $request->payment_date,
-                'amount' => $request->amount,
-                'payment_label' => $request->payment_label,
-                'del_flg' => false
-            ]);
+        $paymentsAndRelatedDataForEdit = $this->paymentService->getPaymentsAndRelatedDataForEdit($request->summary_ym, $request->group_id);
 
-            $memberHistories = MemberHistory::where('summary_ym', $request->summary_ym)
-                ->where('group_id', $request->group_id)
-                ->orderBy('member_id')
-                ->get();
-            $memberIDs = $this->getMemberIDs($memberHistories);
-            $memberCategoryHistories = MemberCategoryHistory::where('summary_ym', $request->summary_ym)
-                ->whereIn('member_id', $memberIDs)
-                ->groupByRaw('member_id, category_id')
-                ->selectRaw('member_id, category_id, max(category_name) as category_name, max(display_order) as display_order, max(income_flg) as income_flg')
-                ->orderByRaw('member_id, category_id, display_order')
-                ->get();
-            $payments = Payment::paymentsForGroup($request->group_id, $memberIDs, $request->summary_ym)->get();
-
-            DB::commit();
-
-            return Inertia::render(
-                'Payments/edit',
-                [
-                    'summary_ym' => (string)$request->summary_ym,
-                    'members' => $memberHistories,
-                    'memberCategories' => $memberCategoryHistories,
-                    'payments' => $payments,
-                    'updatedPayment' => $payment,
-                ]
-            );
-        } catch (\Exception $e) {
-            DB::rollBack();
+        $memberHistoryArray = [];
+        foreach ($paymentsAndRelatedDataForEdit->getMemberHistories() as $memberHistory) {
+            $memberHistoryArray[] = [
+                "member_history_id" => $memberHistory->getMemberHistoryId(),
+                "summary_ym" => $memberHistory->getSummaryYm(),
+                "group_id" => $memberHistory->getGroupId(),
+                "group_name" => $memberHistory->getGroupName(),
+                "member_id" => $memberHistory->getMemberId(),
+                "member_name" => $memberHistory->getMemberName(),
+                "del_flg" => $memberHistory->isDelFlg(),
+                "created_at" => $memberHistory->getCreatedAt(),
+                "updated_at" => $memberHistory->getUpdatedAt()
+            ];
         }
+
+        $memberCategoryHistoryArray = [];
+        foreach ($paymentsAndRelatedDataForEdit->getMemberCategoryHistories() as $memberCategoryHistory) {
+            $memberCategoryHistoryArray[] = [
+                "member_category_history_id" => $memberCategoryHistory->getMemberCategoryHistoryId(),
+                "summary_ym" => $memberCategoryHistory->getSummaryYm(),
+                "member_id" => $memberCategoryHistory->getMemberId(),
+                "category_id" => $memberCategoryHistory->getCategoryId(),
+                "category_name" => $memberCategoryHistory->getCategoryName(),
+                "display_order" => $memberCategoryHistory->getDisplayOrder(),
+                "income_flg" => $memberCategoryHistory->isIncomeFlg(),
+                "del_flg" => $memberCategoryHistory->isDelFlg(),
+                "created_at" => $memberCategoryHistory->getCreatedAt(),
+                "updated_at" => $memberCategoryHistory->getUpdatedAt()
+            ];
+        }
+
+        $paymentArray = [];
+        foreach ($paymentsAndRelatedDataForEdit->getPayments() as $paymentForEdit) {
+            $paymentArray[] = [
+                "payment_id" => $paymentForEdit->getPaymentId(),
+                "summary_ym" => $paymentForEdit->getSummaryYm(),
+                "member_id" => $paymentForEdit->getMemberId(),
+                "category_id" => $paymentForEdit->getCategoryId(),
+                "category_name" => $paymentForEdit->getCategoryName(),
+                "categorized_payment_id" => $paymentForEdit->getCategorizedPaymentId(),
+                "payment_date" => $paymentForEdit->getPaymentDate(),
+                "amount" => $paymentForEdit->getAmount(),
+                "payment_label" => $paymentForEdit->getPaymentLabel()
+            ];
+        }
+
+        return Inertia::render(
+            'Payments/edit',
+            [
+                'summary_ym' => (string)$request->summary_ym,
+                'updatedPayment' => $insertedPaymentArray,
+                'members' => $memberHistoryArray,
+                'memberCategories' => $memberCategoryHistoryArray,
+                'payments' => $paymentArray,
+            ]
+        );
     }
 
     /**
      * Display the specified resource.
      *
      * @param  \App\Models\Payment  $payment
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function show(Payment $payment)
     {
