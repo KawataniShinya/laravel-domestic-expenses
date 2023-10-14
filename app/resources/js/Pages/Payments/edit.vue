@@ -137,7 +137,7 @@ const removeCommaOnEvent = ($event) => {
 }
 
 const removeComma = arg => {
-    return String(arg).replace(',', '')
+    return String(arg).replace(/,/g, '')
 }
 
 const separateHyphenEvent = ($event) => {
