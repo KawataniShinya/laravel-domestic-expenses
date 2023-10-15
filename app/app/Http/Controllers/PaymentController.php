@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePaymentRequest;
 use App\Http\Requests\UpdatePaymentRequest;
+use App\Http\Services\DTO\PaymentService\PaymentTotalMonthly;
 use App\Http\Services\PaymentService;
 use App\Models\AuthMember;
 use App\Models\Member;
@@ -34,6 +35,22 @@ class PaymentController extends Controller
     public function index(): Response
     {
         $payments = $this->paymentService->getPaymentTotalMonthly();
+        $paymentArray = $this->getArrayPaymentForIndex($payments);
+
+        return Inertia::render(
+            'Payments/index',
+            [
+                'payments' => $paymentArray
+            ]
+        );
+    }
+
+    /**
+     * @param array<PaymentTotalMonthly> $payments
+     * @return array
+     */
+    private function getArrayPaymentForIndex(array $payments): array
+    {
         $paymentArray = [];
         foreach ($payments as $payment) {
             $paymentArray[] = [
@@ -43,13 +60,7 @@ class PaymentController extends Controller
                 'total' => $payment->getTotal()
             ];
         }
-
-        return Inertia::render(
-            'Payments/index',
-            [
-                'payments' => $paymentArray
-            ]
-        );
+        return $paymentArray;
     }
 
     /**
@@ -79,26 +90,53 @@ class PaymentController extends Controller
             $request->amount,
             $request->payment_label
         );
-
-        $insertedPaymentArray = [
-            "payment_id" => $insertedPayment->getPaymentId(),
-            "summary_ym" => $insertedPayment->getSummaryYm(),
-            "group_id" => $insertedPayment->getGroupId(),
-            "member_id" => $insertedPayment->getMemberId(),
-            "category_id" => $insertedPayment->getCategoryId(),
-            "categorized_payment_id" => $insertedPayment->getCategorizedPaymentId(),
-            "payment_date" => $insertedPayment->getPaymentDate(),
-            "amount" => $insertedPayment->getAmount(),
-            "payment_label" => $insertedPayment->getPaymentLabel(),
-            "del_flg" => $insertedPayment->isDelFlg(),
-            "created_at" => $insertedPayment->getCreatedAt(),
-            "updated_at" => $insertedPayment->getUpdatedAt()
-        ];
+        $insertedPaymentArray = $this->getArrayPayment($insertedPayment);
 
         $paymentsAndRelatedDataForEdit = $this->paymentService->getPaymentsAndRelatedDataForEdit($request->summary_ym, $request->group_id);
+        $memberHistoryArray = $this->getArrayMemberHistories($paymentsAndRelatedDataForEdit->getMemberHistories());
+        $memberCategoryHistoryArray = $this->getArrayMemberCategoryHistories($paymentsAndRelatedDataForEdit->getMemberCategoryHistories());
+        $paymentArray = $this->getArrayPayments($paymentsAndRelatedDataForEdit->getPayments());
 
+        return Inertia::render(
+            'Payments/edit',
+            [
+                'summary_ym' => (string)$request->summary_ym,
+                'updatedPayment' => $insertedPaymentArray,
+                'members' => $memberHistoryArray,
+                'memberCategories' => $memberCategoryHistoryArray,
+                'payments' => $paymentArray,
+            ]
+        );
+    }
+
+    private function getArrayPayment(\App\Http\Services\DTO\Common\Payment $payment): array
+    {
+        $paymentArray = [
+            "payment_id" => $payment->getPaymentId(),
+            "summary_ym" => $payment->getSummaryYm(),
+            "group_id" => $payment->getGroupId(),
+            "member_id" => $payment->getMemberId(),
+            "category_id" => $payment->getCategoryId(),
+            "categorized_payment_id" => $payment->getCategorizedPaymentId(),
+            "payment_date" => $payment->getPaymentDate(),
+            "amount" => $payment->getAmount(),
+            "payment_label" => $payment->getPaymentLabel(),
+            "del_flg" => $payment->isDelFlg(),
+            "created_at" => $payment->getCreatedAt(),
+            "updated_at" => $payment->getUpdatedAt()
+        ];
+
+        return $paymentArray;
+    }
+
+    /**
+     * @param array $memberHistories
+     * @return array<\App\Http\Services\DTO\Common\MemberHistory>
+     */
+    private function getArrayMemberHistories(array $memberHistories): array
+    {
         $memberHistoryArray = [];
-        foreach ($paymentsAndRelatedDataForEdit->getMemberHistories() as $memberHistory) {
+        foreach ($memberHistories as $memberHistory) {
             $memberHistoryArray[] = [
                 "member_history_id" => $memberHistory->getMemberHistoryId(),
                 "summary_ym" => $memberHistory->getSummaryYm(),
@@ -112,8 +150,17 @@ class PaymentController extends Controller
             ];
         }
 
+        return $memberHistoryArray;
+    }
+
+    /**
+     * @param array $memberCategoryHistories
+     * @return array<\App\Http\Services\DTO\Common\MemberCategoryHistory>
+     */
+    private function getArrayMemberCategoryHistories(array $memberCategoryHistories): array
+    {
         $memberCategoryHistoryArray = [];
-        foreach ($paymentsAndRelatedDataForEdit->getMemberCategoryHistories() as $memberCategoryHistory) {
+        foreach ($memberCategoryHistories as $memberCategoryHistory) {
             $memberCategoryHistoryArray[] = [
                 "member_category_history_id" => $memberCategoryHistory->getMemberCategoryHistoryId(),
                 "summary_ym" => $memberCategoryHistory->getSummaryYm(),
@@ -128,8 +175,17 @@ class PaymentController extends Controller
             ];
         }
 
+        return $memberCategoryHistoryArray;
+    }
+
+    /**
+     * @param array $payments
+     * @return array<\App\Http\Services\DTO\Common\Payment>
+     */
+    private function getArrayPayments(array $payments): array
+    {
         $paymentArray = [];
-        foreach ($paymentsAndRelatedDataForEdit->getPayments() as $paymentForEdit) {
+        foreach ($payments as $paymentForEdit) {
             $paymentArray[] = [
                 "payment_id" => $paymentForEdit->getPaymentId(),
                 "summary_ym" => $paymentForEdit->getSummaryYm(),
@@ -143,16 +199,7 @@ class PaymentController extends Controller
             ];
         }
 
-        return Inertia::render(
-            'Payments/edit',
-            [
-                'summary_ym' => (string)$request->summary_ym,
-                'updatedPayment' => $insertedPaymentArray,
-                'members' => $memberHistoryArray,
-                'memberCategories' => $memberCategoryHistoryArray,
-                'payments' => $paymentArray,
-            ]
-        );
+        return $paymentArray;
     }
 
     /**
