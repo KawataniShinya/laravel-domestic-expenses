@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Database\Factories\MemberCategoryFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder|MemberCategory memberCategoriesByMembers(array $memberIDs)
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategory newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategory newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategory query()
@@ -24,7 +25,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategory whereMemberCategoryId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategory whereMemberId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategory whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|MemberCategory memberCategoriesByMembers(array $memberIDs)
  * @mixin \Eloquent
  */
 class MemberCategory extends Model

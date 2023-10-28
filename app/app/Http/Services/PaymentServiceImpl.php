@@ -58,4 +58,53 @@ class PaymentServiceImpl implements PaymentService
 
         return new PaymentsAndRelatedDataForEdit($memberHistories, $memberCategoryHistories, $paymentsForEdit);
     }
+
+    public function getMemberHistoriesInGroup(int $summaryYm): array
+    {
+        $authMember = $this->memberRepository->selectMemberByAuth();
+        $memberHistories = $this->memberRepository->selectMemberHistoriesByGroupId($summaryYm, $authMember->getGroupId());
+
+        return $memberHistories;
+    }
+
+    public function getMemberCategoryHistoriesInGroup(int $summaryYm): array
+    {
+        $authMember = $this->memberRepository->selectMemberByAuth();
+        $memberCategoryHistories = $this->memberCategoryRepository->getMemberCategoryHistoriesByYmGroup($summaryYm, $authMember->getGroupId());
+
+        return $memberCategoryHistories;
+    }
+
+    public function getPaymentSummaryIncome(int $summaryYm): array
+    {
+        $authMember = $this->memberRepository->selectMemberByAuth();
+        $paymentSummaryIncome = $this->paymentRepository->selectPaymentSummaryByCategoryMember($authMember->getGroupId(), $summaryYm, true);
+
+        return $paymentSummaryIncome;
+    }
+
+    public function getPaymentSummaryExpense(int $summaryYm): array
+    {
+        $authMember = $this->memberRepository->selectMemberByAuth();
+        $paymentSummaryExpense = $this->paymentRepository->selectPaymentSummaryByCategoryMember($authMember->getGroupId(), $summaryYm, false);
+
+        return $paymentSummaryExpense;
+    }
+
+    public function getExpenseTotalByMemberLastMonth(int $summaryYm): array
+    {
+        $authMember = $this->memberRepository->selectMemberByAuth();
+        $lastMonth = $this->getLastMonth($summaryYm);
+        $expenseByMemberLastMonth = $this->paymentRepository->selectPaymentTotalByMember($authMember->getGroupId(), $lastMonth, false);
+
+        return $expenseByMemberLastMonth;
+    }
+
+    private function getLastMonth(int $yyyymm)
+    {
+        $currentYear = substr($yyyymm, 0, 4);
+        $currentMonth = substr($yyyymm, 4, 2);
+        $lastMonthTime = strtotime($currentYear . '-' . $currentMonth . '-01 -1 month');
+        return date('Ym', $lastMonthTime);
+    }
 }

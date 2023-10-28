@@ -12,6 +12,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $summary_ym 集計年月
  * @property int $member_id メンバーID
  * @property int $category_id 収支分類ID
+ * @property string $category_name 収支分類名
+ * @property int $display_order グループ別表示順
+ * @property int $income_flg 収入フラグ
  * @property int $del_flg 削除フラグ
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -20,18 +23,15 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory query()
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereCategoryId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereCategoryName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereDelFlg($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereDisplayOrder($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereIncomeFlg($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereMemberCategoryHistoryId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereMemberId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereSummaryYm($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereUpdatedAt($value)
- * @property string $category_name 収支分類名
- * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereCategoryName($value)
- * @property int $income_flg 収入フラグ
- * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereIncomeFlg($value)
- * @property int $display_order グループ別表示順
- * @method static \Illuminate\Database\Eloquent\Builder|MemberCategoryHistory whereDisplayOrder($value)
  * @mixin \Eloquent
  */
 class MemberCategoryHistory extends Model

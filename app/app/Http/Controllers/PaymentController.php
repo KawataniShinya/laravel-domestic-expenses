@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePaymentRequest;
 use App\Http\Requests\UpdatePaymentRequest;
+use App\Http\Services\DTO\Common\PaymentSummary;
+use App\Http\Services\DTO\PaymentService\CategoryInGroup;
+use App\Http\Services\DTO\PaymentService\PaymentTotalByMember;
 use App\Http\Services\DTO\PaymentService\PaymentTotalMonthly;
 use App\Http\Services\PaymentService;
 use App\Models\AuthMember;
@@ -130,8 +133,8 @@ class PaymentController extends Controller
     }
 
     /**
-     * @param array $memberHistories
-     * @return array<\App\Http\Services\DTO\Common\MemberHistory>
+     * @param array<\App\Http\Services\DTO\Common\MemberHistory> $memberHistories
+     * @return array
      */
     private function getArrayMemberHistories(array $memberHistories): array
     {
@@ -154,8 +157,8 @@ class PaymentController extends Controller
     }
 
     /**
-     * @param array $memberCategoryHistories
-     * @return array<\App\Http\Services\DTO\Common\MemberCategoryHistory>
+     * @param array<\App\Http\Services\DTO\Common\MemberCategoryHistory> $memberCategoryHistories
+     * @return array
      */
     private function getArrayMemberCategoryHistories(array $memberCategoryHistories): array
     {
@@ -179,8 +182,8 @@ class PaymentController extends Controller
     }
 
     /**
-     * @param array $payments
-     * @return array<\App\Http\Services\DTO\Common\Payment>
+     * @param array<\App\Http\Services\DTO\Common\Payment> $payments
+     * @return array
      */
     private function getArrayPayments(array $payments): array
     {
@@ -221,26 +224,25 @@ class PaymentController extends Controller
      */
     public function showSummary(string $summary_ym)
     {
-        $authMember = AuthMember::query()->get();
-        $groupId = $authMember[0]->group_id;
+        $memberHistory = $this->getArrayMemberHistories(
+            $this->paymentService->getMemberHistoriesInGroup($summary_ym)
+        );
 
-        $memberHistorySubQuery = MemberHistory::where('summary_ym', $summary_ym)
-            ->where('group_id', $groupId);
-        $memberHistory = $memberHistorySubQuery->get();
+        $memberCategoryHistory = $this->getArrayCategoriesInGroup(
+            $this->paymentService->getMemberCategoryHistoriesInGroup($summary_ym)
+        );
 
-        $memberIDs = $memberHistorySubQuery->pluck('member_id')->toArray();
-        $memberCategoryHistory = MemberCategoryHistory::where('summary_ym', $summary_ym)
-            ->whereIn('member_id', $memberIDs)
-            ->groupBy('category_id')
-            ->selectRaw('category_id, max(category_name) as category_name, max(display_order) as display_order, max(income_flg) as income_flg')
-            ->orderBy('display_order')
-            ->get();
+        $paymentSummaryIncome = $this->getArrayPaymentSummary(
+            $this->paymentService->getPaymentSummaryIncome($summary_ym)
+        );
 
-        $paymentSummaryIncome = Payment::paymentSummaryByCategoryMember($groupId, $summary_ym, true)->get();
-        $paymentSummaryExpense = Payment::paymentSummaryByCategoryMember($groupId, $summary_ym, false)->get();
+        $paymentSummaryExpense = $this->getArrayPaymentSummary(
+            $this->paymentService->getPaymentSummaryExpense($summary_ym)
+        );
 
-        $lastMonth = $this->getLastMonth($summary_ym);
-        $paymentExpenseByMemberLastMonth = Payment::paymentSummaryByMember($groupId, $lastMonth, false)->get();
+        $expenseByMemberLastMonth = $this->getArrayPaymentTotalByMember(
+            $this->paymentService->getExpenseTotalByMemberLastMonth($summary_ym)
+        );
 
         return Inertia::render(
             'Payments/summary',
@@ -250,17 +252,63 @@ class PaymentController extends Controller
                 'categories' => $memberCategoryHistory,
                 'paymentsIncome' => $paymentSummaryIncome,
                 'paymentsExpense' => $paymentSummaryExpense,
-                'paymentExpenseByMemberLastMonth' => $paymentExpenseByMemberLastMonth
+                'paymentExpenseByMemberLastMonth' => $expenseByMemberLastMonth
             ]
         );
     }
 
-    private function getLastMonth(int $yyyymm)
+    /**
+     * @param array<CategoryInGroup> $categoriesInGroup
+     * @return array
+     */
+    private function getArrayCategoriesInGroup(array $categoriesInGroup): array
     {
-        $currentYear = substr($yyyymm, 0, 4);
-        $currentMonth = substr($yyyymm, 4, 2);
-        $lastMonthTime = strtotime($currentYear . '-' . $currentMonth . '-01 -1 month');
-        return date('Ym', $lastMonthTime);
+        $categoryInGroupArray = [];
+        foreach ($categoriesInGroup as $categoryInGroup) {
+            $categoryInGroupArray[] = [
+                "category_id" => $categoryInGroup->getCategoryId(),
+                "category_name" => $categoryInGroup->getCategoryName(),
+                "display_order" => $categoryInGroup->getDisplayOrder(),
+                "income_flg" => $categoryInGroup->isIncomeFlg() === true ? 1 : 0
+            ];
+        }
+
+        return $categoryInGroupArray;
+    }
+
+    /**
+     * @param array<PaymentSummary> $paymentsSummary
+     * @return array
+     */
+    private function getArrayPaymentSummary(array $paymentsSummary): array
+    {
+        $paymentSummaryArray = [];
+        foreach ($paymentsSummary as $paymentSummary) {
+            $paymentSummaryArray[] = [
+                "member_id" => $paymentSummary->getMemberId(),
+                "category_id" => $paymentSummary->getCategoryId(),
+                "amount" => $paymentSummary->getAmount()
+            ];
+        }
+
+        return $paymentSummaryArray;
+    }
+
+    /**
+     * @param array<PaymentTotalByMember> $paymentTotalByMember
+     * @return array
+     */
+    private function getArrayPaymentTotalByMember(array $paymentTotalByMember): array
+    {
+        $paymentTotalByMemberArray = [];
+        foreach ($paymentTotalByMember as $totals) {
+            $paymentTotalByMemberArray[] = [
+                "member_id" => $totals->getMemberId(),
+                "amount" => $totals->getAmount()
+            ];
+        }
+
+        return $paymentTotalByMemberArray;
     }
 
     /**

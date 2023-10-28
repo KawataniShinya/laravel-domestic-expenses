@@ -6,8 +6,6 @@ use App\Models\Scopes\MemberByAuth;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
-use phpDocumentor\Reflection\Types\Integer;
 
 /**
  * App\Models\AuthMember
