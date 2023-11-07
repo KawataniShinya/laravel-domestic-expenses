@@ -53,7 +53,12 @@ class PaymentRepositoryImpl implements PaymentRepository
             ->selectRaw('max(categorized_payment_id) as categorized_payment_id')
             ->first();
 
-        return $maxCategorizedPaymentId->categorized_payment_id;
+        if (is_null($maxCategorizedPaymentId->categorized_payment_id)) {
+            return 0;
+        }
+        else {
+            return $maxCategorizedPaymentId->categorized_payment_id;
+        }
     }
 
     public function insertPayment(int $summary_ym, int $group_id, int $member_id, int $category_id, int|null $categorized_payment_id, string|null $payment_date, int $amount, string|null $payment_label): \App\Http\Services\DTO\Common\Payment

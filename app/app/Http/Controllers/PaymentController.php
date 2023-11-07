@@ -6,16 +6,14 @@ use App\Http\Requests\StorePaymentRequest;
 use App\Http\Requests\UpdatePaymentRequest;
 use App\Http\Services\DTO\Common\PaymentSummary;
 use App\Http\Services\DTO\PaymentService\CategoryInGroup;
+use App\Http\Services\DTO\PaymentService\PaymentForEdit;
 use App\Http\Services\DTO\PaymentService\PaymentTotalByMember;
 use App\Http\Services\DTO\PaymentService\PaymentTotalMonthly;
 use App\Http\Services\PaymentService;
 use App\Models\AuthMember;
-use App\Models\Member;
-use App\Models\MemberCategory;
 use App\Models\MemberCategoryHistory;
 use App\Models\MemberHistory;
 use App\Models\Payment;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -98,7 +96,7 @@ class PaymentController extends Controller
         $paymentsAndRelatedDataForEdit = $this->paymentService->getPaymentsAndRelatedDataForEdit($request->summary_ym, $request->group_id);
         $memberHistoryArray = $this->getArrayMemberHistories($paymentsAndRelatedDataForEdit->getMemberHistories());
         $memberCategoryHistoryArray = $this->getArrayMemberCategoryHistories($paymentsAndRelatedDataForEdit->getMemberCategoryHistories());
-        $paymentArray = $this->getArrayPayments($paymentsAndRelatedDataForEdit->getPayments());
+        $paymentArray = $this->getArrayPaymentsForEdit($paymentsAndRelatedDataForEdit->getPayments());
 
         return Inertia::render(
             'Payments/edit',
@@ -182,10 +180,10 @@ class PaymentController extends Controller
     }
 
     /**
-     * @param array<\App\Http\Services\DTO\Common\Payment> $payments
+     * @param array<PaymentForEdit> $payments
      * @return array
      */
-    private function getArrayPayments(array $payments): array
+    private function getArrayPaymentsForEdit(array $payments): array
     {
         $paymentArray = [];
         foreach ($payments as $paymentForEdit) {
@@ -194,7 +192,6 @@ class PaymentController extends Controller
                 "summary_ym" => $paymentForEdit->getSummaryYm(),
                 "member_id" => $paymentForEdit->getMemberId(),
                 "category_id" => $paymentForEdit->getCategoryId(),
-                "category_name" => $paymentForEdit->getCategoryName(),
                 "categorized_payment_id" => $paymentForEdit->getCategorizedPaymentId(),
                 "payment_date" => $paymentForEdit->getPaymentDate(),
                 "amount" => $paymentForEdit->getAmount(),
@@ -328,101 +325,22 @@ class PaymentController extends Controller
      * @param  string  $summary_ym
      * @return Response
      */
-    public function editPayments(string $summary_ym)
+    public function editPayments(string $summary_ym): Response
     {
-        DB::beginTransaction();
+        $paymentsAndRelatedDataForEdit = $this->paymentService->getOrCreateMemberAndCategoryHistoryWithPayments($summary_ym);
+        $memberHistoryArray = $this->getArrayMemberHistories($paymentsAndRelatedDataForEdit->getMemberHistories());
+        $memberCategoryHistoryArray = $this->getArrayMemberCategoryHistories($paymentsAndRelatedDataForEdit->getMemberCategoryHistories());
+        $paymentArray = $this->getArrayPaymentsForEdit($paymentsAndRelatedDataForEdit->getPayments());
 
-        try {
-            $authMember = AuthMember::query()->get();
-            $groupId = $authMember[0]->group_id;
-
-            $memberHistories = $this->getOrCreateMemberHistory($summary_ym, $groupId);
-            $memberIDs = $this->getMemberIDs($memberHistories);
-
-            $memberCategoryHistories = $this->getOrCreateMemberCategoryHistory($summary_ym, $memberIDs);
-
-            $payments = Payment::paymentsForGroup($groupId, $memberIDs, $summary_ym)->get();
-
-            DB::commit();
-
-            return Inertia::render(
-                'Payments/edit',
-                [
-                    'summary_ym' => $summary_ym,
-                    'members' => $memberHistories,
-                    'memberCategories' => $memberCategoryHistories,
-                    'payments' => $payments
-                ]
-            );
-        } catch (\Exception $e) {
-            DB::rollBack();
-        }
-    }
-
-    private function getOrCreateMemberHistory(string $summary_ym, int $groupId)
-    {
-        $memberHistory = MemberHistory::where('summary_ym', $summary_ym)
-            ->where('group_id', $groupId)
-            ->orderBy('member_id')
-            ->get();
-
-        if($memberHistory->isEmpty()) {
-            $groupMembers = Member::groupMembers($groupId)->get();
-            $memberHistoryArray = $this->createMemberHistoryArray($groupMembers, $summary_ym);
-            MemberHistory::insert($memberHistoryArray);
-
-            return MemberHistory::where('summary_ym', $summary_ym)
-                ->where('group_id', $groupId)
-                ->orderBy('member_id')
-                ->get();
-        }
-        else {
-            return $memberHistory;
-        }
-    }
-
-    private function createMemberHistoryArray(Collection $groupMembers, string $summary_ym)
-    {
-        $memberHistoryArray = array();
-        foreach ($groupMembers as $groupMember) {
-            $memberHistoryArray[] = [
+        return Inertia::render(
+            'Payments/edit',
+            [
                 'summary_ym' => $summary_ym,
-                'group_id' => $groupMember->group_id,
-                'group_name' => $groupMember->group_name,
-                'member_id' => $groupMember->member_id,
-                'member_name' => $groupMember->member_name,
-                'del_flg' => false,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ];
-        }
-        return $memberHistoryArray;
-    }
-
-    private function getOrCreateMemberCategoryHistory(string $summary_ym, array $memberIDs)
-    {
-        $memberCategoryHistory = MemberCategoryHistory::where('summary_ym', $summary_ym)
-            ->whereIn('member_id', $memberIDs)
-            ->groupByRaw('member_id, category_id')
-            ->selectRaw('member_id, category_id, max(category_name) as category_name, max(display_order) as display_order, max(income_flg) as income_flg')
-            ->orderByRaw('member_id, category_id, display_order')
-            ->get();
-
-        if($memberCategoryHistory->isEmpty()) {
-            $memberCategories = MemberCategory::memberCategoriesByMembers($memberIDs)->get();
-            $memberCategoryHistoryArray = $this->createMemberCategoryHistoryArray($memberCategories, $summary_ym);
-            MemberCategoryHistory::insert($memberCategoryHistoryArray);
-
-            return MemberCategoryHistory::where('summary_ym', $summary_ym)
-                ->whereIn('member_id', $memberIDs)
-                ->groupByRaw('member_id, category_id')
-                ->selectRaw('member_id, category_id, max(category_name) as category_name, max(display_order) as display_order, max(income_flg) as income_flg')
-                ->orderByRaw('member_id, category_id, display_order')
-                ->get();
-        }
-        else {
-            return $memberCategoryHistory;
-        }
+                'members' => $memberHistoryArray,
+                'memberCategories' => $memberCategoryHistoryArray,
+                'payments' => $paymentArray
+            ]
+        );
     }
 
     /**
@@ -436,26 +354,6 @@ class PaymentController extends Controller
             $memberIDs[] = $memberHistory->member_id;
         }
         return $memberIDs;
-    }
-
-    public function createMemberCategoryHistoryArray(Collection $memberCategories, string $summary_ym)
-    {
-        $memberCategoryHistoryArray = array();
-        foreach ($memberCategories as $memberCategory) {
-            $memberCategoryHistoryArray[] = [
-                'summary_ym' => $summary_ym,
-                'member_id' => $memberCategory->member_id,
-                'category_id' => $memberCategory->category_id,
-                'category_name' => $memberCategory->category_name,
-                'display_order' => $memberCategory->display_order,
-                'income_flg' => $memberCategory->income_flg,
-                'del_flg' => false,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ];
-        }
-
-        return $memberCategoryHistoryArray;
     }
 
     /**

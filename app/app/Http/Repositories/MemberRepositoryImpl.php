@@ -3,7 +3,9 @@
 namespace App\Http\Repositories;
 
 use App\Http\Services\DTO\PaymentService\AuthMember;
+use App\Http\Services\DTO\PaymentService\GroupMember;
 use App\Http\Services\MemberRepository;
+use App\Models\Member;
 use App\Models\MemberHistory;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -69,5 +71,56 @@ class MemberRepositoryImpl implements MemberRepository
         }
 
         return $memberHistoryArray;
+    }
+
+    public function selectGroupMember(int $group_id): array
+    {
+        $groupMembers = Member::leftJoin('groups', function ($join) {
+                $join
+                    ->on('members.group_id', '=', 'groups.group_id');
+            })
+            ->where('members.group_id', $group_id)
+            ->where('members.del_flg', false)
+            ->where('groups.del_flg', false)
+            ->selectRaw(
+                '
+                        groups.group_id as group_id,
+                        groups.group_name as group_name,
+                        members.member_id as member_id,
+                        members.member_name as member_name
+                    '
+            )
+            ->get();
+
+        $groupMemberArray = [];
+        foreach ($groupMembers as $groupMember) {
+            $groupMemberArray[] = new GroupMember(
+                $groupMember->group_id,
+                $groupMember->group_name,
+                $groupMember->member_id,
+                $groupMember->member_name
+            );
+        }
+
+        return $groupMemberArray;
+    }
+
+    public function insertMemberHistories(array $memberHistories): void
+    {
+        $memberHistoryArray = [];
+        foreach ($memberHistories as $memberHistory) {
+            $memberHistoryArray[] = [
+                'summary_ym' => $memberHistory->getSummaryYm(),
+                'group_id' => $memberHistory->getGroupId(),
+                'group_name' => $memberHistory->getGroupName(),
+                'member_id' => $memberHistory->getMemberId(),
+                'member_name' => $memberHistory->getMemberName(),
+                'del_flg' => $memberHistory->isDelFlg(),
+                'created_at' => $memberHistory->getCreatedAt(),
+                'updated_at' => $memberHistory->getUpdatedAt()
+            ];
+        }
+
+        MemberHistory::insert($memberHistoryArray);
     }
 }

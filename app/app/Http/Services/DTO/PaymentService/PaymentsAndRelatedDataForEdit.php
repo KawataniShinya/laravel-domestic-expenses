@@ -4,7 +4,6 @@ namespace App\Http\Services\DTO\PaymentService;
 
 use App\Http\Services\DTO\Common\MemberCategoryHistory;
 use App\Http\Services\DTO\Common\MemberHistory;
-use App\Http\Services\DTO\Common\Payment;
 
 class PaymentsAndRelatedDataForEdit
 {
@@ -19,7 +18,7 @@ class PaymentsAndRelatedDataForEdit
     private array $memberCategoryHistories;
 
     /**
-     * @var array<Payment>
+     * @var array<PaymentForEdit>
      */
     private array $payments;
 
@@ -56,7 +55,7 @@ class PaymentsAndRelatedDataForEdit
     }
 
     /**
-     * @return array<Payment>
+     * @return array<PaymentForEdit>
      */
     public function getPayments(): array
     {
