@@ -15,7 +15,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Database\Factories\MemberCategoryFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder|MemberCategory memberCategoriesByMembers(array $memberIDs)
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategory newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategory newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|MemberCategory query()
@@ -38,24 +37,4 @@ class MemberCategory extends Model
         'del_flg'
     ];
     protected $primaryKey = 'member_category_id';
-
-    public function scopeMemberCategoriesByMembers($query, array $memberIDs)
-    {
-        return MemberCategory::leftJoin('categories', function ($join) {
-                $join
-                    ->on('member_categories.category_id', '=', 'categories.category_id');
-            })
-            ->whereIn('member_categories.member_id', $memberIDs)
-            ->where('member_categories.del_flg', false)
-            ->where('categories.del_flg', false)
-            ->selectRaw(
-                '
-                        member_categories.member_id as member_id,
-                        member_categories.category_id as category_id,
-                        categories.category_name as category_name,
-                        categories.display_order as display_order,
-                        categories.income_flg as income_flg
-                    '
-            );
-    }
 }

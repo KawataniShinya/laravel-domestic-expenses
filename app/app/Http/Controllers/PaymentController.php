@@ -10,12 +10,7 @@ use App\Http\Services\DTO\PaymentService\PaymentForEdit;
 use App\Http\Services\DTO\PaymentService\PaymentTotalByMember;
 use App\Http\Services\DTO\PaymentService\PaymentTotalMonthly;
 use App\Http\Services\PaymentService;
-use App\Models\AuthMember;
-use App\Models\MemberCategoryHistory;
-use App\Models\MemberHistory;
 use App\Models\Payment;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -344,19 +339,6 @@ class PaymentController extends Controller
     }
 
     /**
-     * @param Collection $memberHistories
-     * @return array
-     */
-    public function getMemberIDs(Collection $memberHistories): array
-    {
-        $memberIDs = array();
-        foreach ($memberHistories as $memberHistory) {
-            $memberIDs[] = $memberHistory->member_id;
-        }
-        return $memberIDs;
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param  \App\Http\Requests\UpdatePaymentRequest  $request
@@ -418,42 +400,9 @@ class PaymentController extends Controller
         //
     }
 
-    public function destroyRelatedPayments(string $summary_ym)
+    public function destroyRelatedPayments(string $summary_ym): \Illuminate\Http\RedirectResponse
     {
-        DB::beginTransaction();
-
-        try {
-            $authMember = AuthMember::query()->get();
-            $groupId = $authMember[0]->group_id;
-
-            $memberHistories = MemberHistory::where('summary_ym', $summary_ym)
-                ->where('group_id', $groupId)
-                ->orderBy('member_id')
-                ->get();
-            $memberIDs = $this->getMemberIDs($memberHistories);
-
-            MemberCategoryHistory::where('summary_ym', $summary_ym)
-                ->whereIn('member_id', $memberIDs)
-                ->delete();
-
-            MemberHistory::where('summary_ym', $summary_ym)
-                ->where('group_id', $groupId)
-                ->delete();
-
-            $payments = Payment::where('summary_ym', $summary_ym)
-                ->where('group_id', $groupId)
-                ->whereIn('member_id', $memberIDs)
-                ->get();
-            foreach ($payments as $payment) {
-                $payment['del_flg'] = true;
-                $payment->save();
-            }
-
-            DB::commit();
-
-            return redirect()->route('payments.index');
-        } catch (\Exception $e) {
-            DB::rollBack();
-        }
+        $this->paymentService->deleteMonthlyPayments($summary_ym);
+        return redirect()->route('payments.index');
     }
 }

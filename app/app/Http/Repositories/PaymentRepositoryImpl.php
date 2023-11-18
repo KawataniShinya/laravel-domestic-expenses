@@ -207,4 +207,17 @@ class PaymentRepositoryImpl implements PaymentRepository
 
         return $payment;
     }
+
+    public function deletePayments(string $summary_ym, int $group_id, array $memberIDs): void
+    {
+        $payments = Payment::where('summary_ym', $summary_ym)
+            ->where('group_id', $group_id)
+            ->where('del_flg', false)
+            ->whereIn('member_id', $memberIDs)
+            ->get();
+        foreach ($payments as $payment) {
+            $payment['del_flg'] = true;
+            $payment->save();
+        }
+    }
 }

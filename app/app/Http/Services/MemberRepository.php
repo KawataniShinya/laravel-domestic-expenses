@@ -31,4 +31,6 @@ interface MemberRepository
      * @return void
      */
     public function insertMemberHistories(array $memberHistories): void;
+
+    public function deleteMemberHistory(string $summary_ym, int $group_id): void;
 }

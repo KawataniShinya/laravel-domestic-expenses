@@ -54,4 +54,6 @@ interface PaymentService
     public function getOrCreateMemberAndCategoryHistoryWithPayments(int $summaryYm): PaymentsAndRelatedDataForEdit;
 
     public function updatePayment(Payment $payment): Payment;
+
+    public function deleteMonthlyPayments(int $summaryYm): void;
 }

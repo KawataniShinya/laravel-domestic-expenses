@@ -51,4 +51,6 @@ interface PaymentRepository
     public function selectPaymentTotalByMember(int $group_id, string $summary_ym, bool $income_flg): array;
 
     public function updatePayment(Payment $payment): Payment;
+
+    public function deletePayments(string $summary_ym, int $group_id, array $memberIDs): void;
 }

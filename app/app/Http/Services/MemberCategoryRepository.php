@@ -41,4 +41,6 @@ interface MemberCategoryRepository
      * @return void
      */
     public function insertMemberCategoryHistories(array $memberCategoryHistories): void;
+
+    public function deleteMemberCategoryHistory(string $summary_ym, array $memberIDs): void;
 }
