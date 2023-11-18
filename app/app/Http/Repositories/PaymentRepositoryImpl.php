@@ -187,4 +187,37 @@ class PaymentRepositoryImpl implements PaymentRepository
 
         return $paymentTotalByMemberArray;
     }
+
+    public function updatePayment(\App\Http\Services\DTO\Common\Payment $payment): \App\Http\Services\DTO\Common\Payment
+    {
+        $paymentModel = Payment::find($payment->getPaymentId());
+        $paymentModel->summary_ym = $payment->getSummaryYm();
+        $paymentModel->group_id = $payment->getGroupId();
+        $paymentModel->member_id = $payment->getMemberId();
+        $paymentModel->category_id = $payment->getCategoryId();
+        $paymentModel->categorized_payment_id = $payment->getCategorizedPaymentId();
+        $paymentModel->payment_date = $payment->getPaymentDate();
+        $paymentModel->amount = $payment->getAmount();
+        $paymentModel->payment_label = $payment->getPaymentLabel();
+        $paymentModel->del_flg = $payment->isDelFlg();
+        $paymentModel->created_at = $payment->getCreatedAt();
+        $paymentModel->updated_at = $payment->getUpdatedAt();
+
+        $paymentModel->save();
+
+        return $payment;
+    }
+
+    public function deletePayments(string $summary_ym, int $group_id, array $memberIDs): void
+    {
+        $payments = Payment::where('summary_ym', $summary_ym)
+            ->where('group_id', $group_id)
+            ->where('del_flg', false)
+            ->whereIn('member_id', $memberIDs)
+            ->get();
+        foreach ($payments as $payment) {
+            $payment['del_flg'] = true;
+            $payment->save();
+        }
+    }
 }

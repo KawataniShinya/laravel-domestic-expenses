@@ -123,4 +123,11 @@ class MemberRepositoryImpl implements MemberRepository
 
         MemberHistory::insert($memberHistoryArray);
     }
+
+    public function deleteMemberHistory(string $summary_ym, int $group_id): void
+    {
+        MemberHistory::where('summary_ym', $summary_ym)
+            ->where('group_id', $group_id)
+            ->delete();
+    }
 }

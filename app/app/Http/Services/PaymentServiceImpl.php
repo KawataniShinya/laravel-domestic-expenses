@@ -225,4 +225,48 @@ class PaymentServiceImpl implements PaymentService
 
         return $memberCategoryHistoryArray;
     }
+
+    public function updatePayment(Payment $payment): Payment
+    {
+        $this->commonRepository->beginTransaction();
+        try {
+            $payment = $this->paymentRepository->updatePayment($payment);
+            $this->commonRepository->commit();
+            return $payment;
+        } catch (\Exception $e) {
+            $this->commonRepository->rollBack();
+        }
+    }
+
+    public function deleteMonthlyPayments(int $summaryYm): void
+    {
+        $this->commonRepository->beginTransaction();
+        try {
+            $authMember = $this->memberRepository->selectMemberByAuth();
+            $groupId = $authMember->getGroupId();
+            $groupMembers = $this->memberRepository->selectGroupMember($groupId);
+            $memberIDs = $this->getMemberIDs($groupMembers);
+
+            $this->memberCategoryRepository->deleteMemberCategoryHistory($summaryYm, $memberIDs);
+            $this->memberRepository->deleteMemberHistory($summaryYm, $groupId);
+            $this->paymentRepository->deletePayments($summaryYm, $groupId, $memberIDs);
+
+            $this->commonRepository->commit();
+        } catch (\Exception $e) {
+            $this->commonRepository->rollBack();
+        }
+    }
+
+    /**
+     * @param array<GroupMember> $groupMembers
+     * @return array
+     */
+    private function getMemberIDs(array $groupMembers)
+    {
+        $memberIDs = array();
+        foreach ($groupMembers as $groupMember) {
+            $memberIDs[] = $groupMember->getMemberId();
+        }
+        return $memberIDs;
+    }
 }

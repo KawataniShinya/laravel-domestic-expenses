@@ -52,4 +52,8 @@ interface PaymentService
     public function getExpenseTotalByMemberLastMonth(int $summaryYm): array;
 
     public function getOrCreateMemberAndCategoryHistoryWithPayments(int $summaryYm): PaymentsAndRelatedDataForEdit;
+
+    public function updatePayment(Payment $payment): Payment;
+
+    public function deleteMonthlyPayments(int $summaryYm): void;
 }

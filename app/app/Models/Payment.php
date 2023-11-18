@@ -23,7 +23,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Database\Factories\PaymentFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder|Payment newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Payment newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Payment paymentsForGroup(int $groupId, array $memberIDs, string $summary_ym)
  * @method static \Illuminate\Database\Eloquent\Builder|Payment query()
  * @method static \Illuminate\Database\Eloquent\Builder|Payment whereAmount($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Payment whereCategorizedPaymentId($value)
@@ -57,19 +56,4 @@ class Payment extends Model
         'del_flg'
     ];
     protected $primaryKey = 'payment_id';
-
-    public function scopePaymentsForGroup($query, int $groupId, array $memberIDs, string $summary_ym)
-    {
-        return Payment::leftJoin('member_category_histories', function ($join) {
-                $join
-                    ->on('payments.summary_ym', '=', 'member_category_histories.summary_ym')
-                    ->on('payments.category_id', '=', 'member_category_histories.category_id')
-                    ->on('payments.member_id', '=', 'member_category_histories.member_id');
-            })
-            ->where('payments.group_id', $groupId)
-            ->where('payments.summary_ym', $summary_ym)
-            ->where('payments.del_flg', false)
-            ->selectRaw('payments.payment_id, payments.summary_ym, payments.member_id, payments.category_id, member_category_histories.category_name, payments.categorized_payment_id, payments.payment_date, payments.amount, payments.payment_label')
-            ->orderByRaw('payments.member_id, payments.category_id, payments.categorized_payment_id');
-    }
 }

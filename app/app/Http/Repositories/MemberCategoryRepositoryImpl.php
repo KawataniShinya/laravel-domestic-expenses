@@ -164,4 +164,11 @@ class MemberCategoryRepositoryImpl implements MemberCategoryRepository
 
         MemberCategoryHistory::insert($memberCategoryHistoryArray);
     }
+
+    public function deleteMemberCategoryHistory(string $summary_ym, array $memberIDs): void
+    {
+        MemberCategoryHistory::where('summary_ym', $summary_ym)
+            ->whereIn('member_id', $memberIDs)
+            ->delete();
+    }
 }
