@@ -363,44 +363,48 @@ class PaymentController extends Controller
      * @param  \App\Models\Payment  $payment
      * @return Response
      */
-    public function update(UpdatePaymentRequest $request, Payment $payment)
+    public function update(UpdatePaymentRequest $request, Payment $payment): Response
     {
-        DB::beginTransaction();
+        $payment->payment_date = $request->payment_date;
+        $payment->amount = $request->amount;
+        $payment->payment_label = $request->payment_label;
+        $paymentDTO = $this->paymentService->updatePayment($this->setPaymentFromModelToDTO($payment));
+        $updatedPaymentArray = $this->getArrayPayment($paymentDTO);
 
-        try {
-            $payment->payment_date = $request->payment_date;
-            $payment->amount = $request->amount;
-            $payment->payment_label =$request->payment_label;
-            $payment->save();
+        $paymentsAndRelatedDataForEdit = $this->paymentService->getPaymentsAndRelatedDataForEdit($paymentDTO->getSummaryYm(), $paymentDTO->getGroupId());
+        $memberHistoryArray = $this->getArrayMemberHistories($paymentsAndRelatedDataForEdit->getMemberHistories());
+        $memberCategoryHistoryArray = $this->getArrayMemberCategoryHistories($paymentsAndRelatedDataForEdit->getMemberCategoryHistories());
+        $paymentArray = $this->getArrayPaymentsForEdit($paymentsAndRelatedDataForEdit->getPayments());
 
-            $memberHistories = MemberHistory::where('summary_ym', $payment->summary_ym)
-                ->where('group_id', $payment->group_id)
-                ->orderBy('member_id')
-                ->get();
-            $memberIDs = $this->getMemberIDs($memberHistories);
-            $memberCategoryHistories = MemberCategoryHistory::where('summary_ym', $payment->summary_ym)
-                ->whereIn('member_id', $memberIDs)
-                ->groupByRaw('member_id, category_id')
-                ->selectRaw('member_id, category_id, max(category_name) as category_name, max(display_order) as display_order, max(income_flg) as income_flg')
-                ->orderByRaw('member_id, category_id, display_order')
-                ->get();
-            $payments = Payment::paymentsForGroup($payment->group_id, $memberIDs, $payment->summary_ym)->get();
+        return Inertia::render(
+            'Payments/edit',
+            [
+                'summary_ym' => (string)$payment->summary_ym,
+                'members' => $memberHistoryArray,
+                'memberCategories' => $memberCategoryHistoryArray,
+                'payments' => $paymentArray,
+                'updatedPayment' => $updatedPaymentArray,
+            ]
+        );
+    }
 
-            DB::commit();
-
-            return Inertia::render(
-                'Payments/edit',
-                [
-                    'summary_ym' => (string)$payment->summary_ym,
-                    'members' => $memberHistories,
-                    'memberCategories' => $memberCategoryHistories,
-                    'payments' => $payments,
-                    'updatedPayment' => $payment,
-                ]
-            );
-        } catch (\Exception $e) {
-            DB::rollBack();
-        }
+    private function setPaymentFromModelToDTO(Payment $paymentModel): \App\Http\Services\DTO\Common\Payment
+    {
+        $paymentDTO = new \App\Http\Services\DTO\Common\Payment(
+            $paymentModel->payment_id,
+            $paymentModel->summary_ym,
+            $paymentModel->group_id,
+            $paymentModel->member_id,
+            $paymentModel->category_id,
+            $paymentModel->categorized_payment_id,
+            $paymentModel->payment_date,
+            $paymentModel->amount,
+            $paymentModel->payment_label,
+            $paymentModel->del_flg,
+            $paymentModel->created_at,
+            $paymentModel->updated_at
+        );
+        return $paymentDTO;
     }
 
     /**

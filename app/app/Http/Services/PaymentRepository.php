@@ -49,4 +49,6 @@ interface PaymentRepository
      * @return array<PaymentTotalByMember>
      */
     public function selectPaymentTotalByMember(int $group_id, string $summary_ym, bool $income_flg): array;
+
+    public function updatePayment(Payment $payment): Payment;
 }

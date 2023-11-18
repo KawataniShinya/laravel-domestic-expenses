@@ -225,4 +225,16 @@ class PaymentServiceImpl implements PaymentService
 
         return $memberCategoryHistoryArray;
     }
+
+    public function updatePayment(Payment $payment): Payment
+    {
+        $this->commonRepository->beginTransaction();
+        try {
+            $payment = $this->paymentRepository->updatePayment($payment);
+            $this->commonRepository->commit();
+            return $payment;
+        } catch (\Exception $e) {
+            $this->commonRepository->rollBack();
+        }
+    }
 }
