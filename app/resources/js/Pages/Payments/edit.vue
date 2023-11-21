@@ -28,6 +28,17 @@ const updateForm = useForm({
     payment_label: ""
 })
 
+onBeforeMount(() => {
+    initBeforeRendering()
+})
+
+onBeforeUpdate(() => {
+    initBeforeRendering()
+})
+
+const memberList = ref([])
+let memberCategoryList = ref()
+let paymentList = ref()
 const initBeforeRendering = () => {
     memberList.value = []
     props.members.forEach(member => {
@@ -73,48 +84,33 @@ const initBeforeRendering = () => {
             paymentList[member_id] = {}
         }
         if (paymentList[member_id][category_id] === undefined) {
-            paymentList[member_id][category_id] = {category_name: payment.category_name}
+            paymentList[member_id][category_id] = {}
         }
         if (paymentList[member_id][category_id][categorized_payment_id] === undefined) {
             paymentList[member_id][category_id][categorized_payment_id] = {}
         }
         paymentList[member_id][category_id][categorized_payment_id] = paymentProperty
     })
-    for (const [member_id, CategorizedPyments] of Object.entries(paymentList)) {
-        let paymentCount = 0
-        for (const [category_id, payments] of Object.entries(CategorizedPyments)) {
-            if (paymentCount < Object.keys(payments).length) {
-                paymentCount = Object.keys(payments).length
-            }
-        }
-        paymentList[member_id].max_payment_count = paymentCount
-    }
+
+    setMemberTabId(memberList.value[0].member_id)
+    setCategoryTabId(Object.entries(memberCategoryList[memberList.value[0].member_id])[0][0])
 }
-
-onBeforeMount(() => {
-    initBeforeRendering()
-})
-
-onBeforeUpdate(() => {
-    initBeforeRendering()
-})
 
 onUpdated(() => {
     if (props.updatedPayment !== null) {
+        setMemberTabId(props.updatedPayment.member_id)
+        setCategoryTabId(props.updatedPayment.category_id)
         setTimeout(forcusNewLineAmount, 0)
     }
 })
 
+const paymentItemTitle = ['明細番号', '金額', '日付', '名目', '操作']
+const itemPrefixForQuerySelector = "item"
 const forcusNewLineAmount = () => {
-    const selector = '#' + newLineAmountPrefix + '_' + props.updatedPayment.member_id + '_' + props.updatedPayment.category_id
+    const selector = '#' + newLineAmountPrefix + '_' + props.updatedPayment.member_id + '_' + props.updatedPayment.category_id + '_0_' + paymentItemTitle.indexOf('金額')
     document.querySelector(selector).focus()
     document.querySelector(selector).scrollIntoView(false)
 }
-
-const memberList = ref([])
-let memberCategoryList = ref()
-let paymentList = ref()
-const paymentItemTitle = ['明細番号', '金額', '日付', '名目', '操作']
 
 const insertCommaOnEvent = ($event) => {
     $event.target.value = separateCommaOrBlank($event.target.value)
@@ -162,15 +158,17 @@ const separateHyphen = arg => {
     }
 }
 
-const getCategoryId = (memberId, columnCountWholeTable) => {
-    const itemOffset = Math.floor((columnCountWholeTable - 1) / paymentItemTitle.length)
-    return Object.keys(memberCategoryList[memberId])[itemOffset]
+const getDisplayRowCount = (memberId, categoryId) => {
+    if (paymentList[memberId] === undefined) {
+        return 0
+    }
+    if (paymentList[memberId][categoryId] === undefined) {
+        return 0
+    }
+    return Object.keys(paymentList[memberId][categoryId]).length
 }
 
-const getDisplayRowCount = memberId => {
-    return paymentList[memberId] === undefined ? 1 : paymentList[memberId].max_payment_count
-}
-
+const newLineTitle = "(新規追加)"
 const getCategorizedPaymentId = (memberId, categoryId, rowPayment) => {
     if (paymentList[memberId] === undefined || paymentList[memberId][categoryId] === undefined) {
         if (rowPayment === 1) {
@@ -191,9 +189,6 @@ const getCategorizedPaymentId = (memberId, categoryId, rowPayment) => {
     }
 }
 
-const newLineTitle = "(新規追加)"
-const newLineAmountPrefix = "newLineAmount"
-
 const getPaymentProperty = (memberId, categoryId, rowPayment, propertyName) => {
     const categorizedPaymentId = getCategorizedPaymentId(memberId, categoryId, rowPayment)
     if (typeof categorizedPaymentId !== "number") {
@@ -204,57 +199,95 @@ const getPaymentProperty = (memberId, categoryId, rowPayment, propertyName) => {
     }
 }
 
-const setTempItem = arg => {
-    tempItem = arg
+const getTextBlank = () => {
+    return ''
 }
-let tempItem
-const setCategorizedPaymentId = arg => {
-    tempCategorizedPaymentId = arg
-}
-let tempCategorizedPaymentId
 
-const sumbitInsertPayment = ($event, currentTitleName, group_id, member_id, category_id) => {
-    let currentTdElement = $event.target.parentNode.parentNode.parentNode
-    for (let i=0; i < paymentItemTitle.indexOf(currentTitleName); i++) {
-        currentTdElement = currentTdElement.previousElementSibling
-    }
-
+const submitInsertPayment = (group_id, member_id, category_id) => {
     insertForm.group_id = group_id
     insertForm.member_id = member_id
     insertForm.category_id = category_id
 
-    currentTdElement = currentTdElement.nextElementSibling
-    insertForm.amount = removeComma(currentTdElement.querySelector('div input').value)
+    let selector = ''
 
-    currentTdElement = currentTdElement.nextElementSibling
-    insertForm.payment_date = separateHyphen(currentTdElement.querySelector('div input').value)
+    selector = '#' + newLineAmountPrefix + '_' + member_id + '_' + category_id + '_0_' + paymentItemTitle.indexOf('金額')
+    insertForm.amount = removeComma(document.querySelector(selector).value)
 
-    currentTdElement = currentTdElement.nextElementSibling
-    insertForm.payment_label = currentTdElement.querySelector('div input').value
+    selector = '#' + newLineAmountPrefix + '_' + member_id + '_' + category_id + '_0_' + paymentItemTitle.indexOf('日付')
+    insertForm.payment_date = separateHyphen(document.querySelector(selector).value)
+
+    selector = '#' + newLineAmountPrefix + '_' + member_id + '_' + category_id + '_0_' + paymentItemTitle.indexOf('名目')
+    insertForm.payment_label = document.querySelector(selector).value
 
     insertForm.post('/payments', insertForm)
 }
 
-const submitUpdatePayment = ($event, currentTitleName, payment_id) => {
-    let currentTdElement = $event.target.parentNode.parentNode.parentNode
-    for (let i=0; i < paymentItemTitle.indexOf(currentTitleName); i++) {
-        currentTdElement = currentTdElement.previousElementSibling
-    }
+const newLineAmountPrefix = "newLineAmount"
+const submitUpdatePayment = (memberId, categoryId, rowPayment) => {
+    updateForm.payment_id = getPaymentProperty(memberId, categoryId, rowPayment, 'payment_id')
 
-    updateForm.payment_id = payment_id
+    let selector = ''
 
-    currentTdElement = currentTdElement.nextElementSibling
-    updateForm.amount = removeComma(currentTdElement.querySelector('div div input').value)
+    selector = '#' + itemPrefixForQuerySelector + '_' + memberId + '_' + categoryId + '_' + rowPayment + '_' + paymentItemTitle.indexOf('金額')
+    updateForm.amount = removeComma(document.querySelector(selector).value)
 
-    currentTdElement = currentTdElement.nextElementSibling
-    updateForm.payment_date = separateHyphen(currentTdElement.querySelector('div div input').value)
+    selector = '#' + itemPrefixForQuerySelector + '_' + memberId + '_' + categoryId + '_' + rowPayment + '_' + paymentItemTitle.indexOf('日付')
+    updateForm.payment_date = separateHyphen(document.querySelector(selector).value)
 
-    currentTdElement = currentTdElement.nextElementSibling
-    updateForm.payment_label = currentTdElement.querySelector('div div input').value
+    selector = '#' + itemPrefixForQuerySelector + '_' + memberId + '_' + categoryId + '_' + rowPayment + '_' + paymentItemTitle.indexOf('名目')
+    updateForm.payment_label = document.querySelector(selector).value
 
-    updateForm.put(route('payments.update', { payment: payment_id }), updateForm)
+    updateForm.put(route('payments.update', { payment: updateForm.payment_id }), updateForm)
+}
+
+let memberTabId = ref(null);
+const setMemberTabId = arg => {
+    memberTabId.value = String(arg)
+    setCategoryTabId(Object.entries(memberCategoryList[arg])[0][0])
+}
+
+let categoryTabId = ref(null);
+const setCategoryTabId = arg => {
+    categoryTabId.value = String(arg)
 }
 </script>
+
+<style scoped>
+.radius {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+/* 左上 */
+.radius thead th:first-child {
+    border-radius: 10px 0 0 0;
+}
+/* 右上 */
+.radius thead th:last-child {
+    border-radius: 0 10px 0 0;
+}
+/* 左下 */
+.radius tbody tr:last-child td:first-child {
+    border-radius: 0 0 0 10px;
+}
+/* 右下 */
+.radius tbody tr:last-child td:last-child {
+    border-radius: 0 0 10px 0;
+}
+/* 内部の上のborderを取りやめ。設定しているborderを削除でもOK */
+.radius tbody td {
+    border-top-width: 0;
+}
+/* 左のborderを取りやめ。設定しているborderを削除でもOK */
+.radius th,
+.radius td {
+    border-left-width: 0;
+}
+/* ただし、一番左は必要 */
+.radius th:first-child,
+.radius td:first-child {
+    border-left-width: 1px;
+}
+</style>
 
 <template>
     <Head title="収支登録" />
@@ -277,112 +310,244 @@ const submitUpdatePayment = ($event, currentTitleName, payment_id) => {
                                     <Link class="flex mx-auto text-black bg-slate-100 border-2 py-2 px-6 focus:outline-none hover:bg-slate-200 rounded" :href="route('payments.index', {})">一覧へ戻る</Link>
                                     <Link class="flex mx-auto text-black bg-slate-100 border-2 py-2 px-6 focus:outline-none hover:bg-slate-200 rounded" :href="route('payments.showSummary', { summary_ym: props.summary_ym })">内訳へ戻る</Link>
                                 </div>
-                                <div class="w-full mx-auto overflow-auto border border-gray-400">
-                                    <table class="table-auto w-full text-left whitespace-no-wrap my-3 mb-6">
-                                        <tr>
-                                            <td v-for="(member, memberKey) in memberList" class="align-top">
-                                                <div class="mx-3">
-                                                    <table class="table-auto w-full text-left whitespace-no-wrap">
-                                                        <thead>
-                                                            <tr>
-                                                                <th class="border border-gray-400 px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-400 text-center" :colspan="Object.keys(memberCategoryList[member.member_id]).length * paymentItemTitle.length">{{ member.member_name }}</th>
-                                                            </tr>
-                                                            <tr>
-                                                                <th class="border border-gray-400 px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-300 text-center" :colspan="5" v-for="(category, categoryKey) in memberCategoryList[member.member_id]" nowrap>{{ category.category_name }}</th>
-                                                            </tr>
-                                                            <tr>
-                                                                <th class="border border-gray-400 px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-200 text-center" v-for="columnCountWholeTable in Object.keys(memberCategoryList[member.member_id]).length * paymentItemTitle.length" nowrap>{{ paymentItemTitle[(columnCountWholeTable - 1) % paymentItemTitle.length] }}</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr v-for="rowPayment in getDisplayRowCount(member.member_id)">
-                                                                <td class="border border-gray-400 border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end" v-for="columnCountWholeTable in Object.keys(memberCategoryList[member.member_id]).length * paymentItemTitle.length" nowrap>
-                                                                    <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '明細番号'">
-                                                                        {{ setCategorizedPaymentId(getCategorizedPaymentId(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment)) }}
-                                                                        {{ tempCategorizedPaymentId }}
-                                                                    </div>
-                                                                    <div v-else-if="typeof tempCategorizedPaymentId === 'number'">
-                                                                        <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '金額'">
-                                                                            {{
-                                                                                setTempItem(separateCommaOrBlank(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'amount')))
-                                                                            }}
-                                                                            <input
-                                                                                type="text"
-                                                                                class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-                                                                                :value="tempItem"
-                                                                                @keypress.enter="submitUpdatePayment($event, '金額', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'))"
-                                                                                @focus="removeCommaOnEvent($event)"
-                                                                                @blur="insertCommaOnEvent($event)">
-                                                                        </div>
-                                                                        <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '日付'">
-                                                                            {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_date')) }}
-                                                                            <input
-                                                                                type="text"
-                                                                                class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-                                                                                :value="tempItem"
-                                                                                @keypress.enter="submitUpdatePayment($event, '日付', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'))"
-                                                                                @blur="separateHyphenEvent($event)">
-                                                                        </div>
-                                                                        <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '名目'">
-                                                                            {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_label')) }}
-                                                                            <input
-                                                                                type="text"
-                                                                                class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-                                                                                :value="tempItem"
-                                                                                @keypress.enter="submitUpdatePayment($event, '名目', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'))">
-                                                                        </div>
-                                                                        <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '操作'">
-                                                                            <input
-                                                                                type="button"
-                                                                                class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg"
-                                                                                value="更新"
-                                                                                @click="submitUpdatePayment($event, '操作', getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_id'))">
-                                                                        </div>
-                                                                    </div>
-                                                                    <div v-else-if="tempCategorizedPaymentId === newLineTitle">
-                                                                        <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '金額'">
-                                                                            {{
-                                                                                setTempItem(separateCommaOrBlank(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'amount')))
-                                                                            }}
-                                                                            <input
-                                                                                v-bind:id="newLineAmountPrefix + '_' + member.member_id + '_' + getCategoryId(member.member_id, columnCountWholeTable)"
-                                                                                type="text"
-                                                                                class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-                                                                                @keypress.enter="sumbitInsertPayment($event, '金額', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))"
-                                                                                @focus="removeCommaOnEvent($event)"
-                                                                                @blur="insertCommaOnEvent($event)">
-                                                                        </div>
-                                                                        <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '日付'">
-                                                                            {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_date')) }}
-                                                                            <input
-                                                                                type="text"
-                                                                                class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-                                                                                @keypress.enter="sumbitInsertPayment($event, '日付', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))"
-                                                                                @blur="separateHyphenEvent($event)">
-                                                                        </div>
-                                                                        <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '名目'">
-                                                                            {{ setTempItem(getPaymentProperty(member.member_id, getCategoryId(member.member_id, columnCountWholeTable), rowPayment, 'payment_label')) }}
-                                                                            <input
-                                                                                type="text"
-                                                                                class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-                                                                                @keypress.enter="sumbitInsertPayment($event, '名目', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
-                                                                        </div>
-                                                                        <div v-if="paymentItemTitle[(columnCountWholeTable-1) % paymentItemTitle.length] === '操作'">
-                                                                            <input
-                                                                                type="button"
-                                                                                class="flex mx-auto text-white bg-green-500 border-0 py-2 px-8 focus:outline-none hover:bg-green-600 rounded text-lg"
-                                                                                value="追加"
-                                                                                @click="sumbitInsertPayment($event, '操作', member.group_id, member.member_id, getCategoryId(member.member_id, columnCountWholeTable))">
-                                                                        </div>
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </table>
+
+                                <div class="bg-white">
+                                    <nav class="flex flex-col sm:flex-row">
+                                        <button
+                                            v-for="(member, memberKey) in memberList"
+                                            @click="setMemberTabId(member.member_id)"
+                                            v-bind:class="{'text-blue-500 border-b-2 font-medium border-blue-500': memberTabId === String(member.member_id)}"
+                                            class="text-gray-600 py-4 px-6 block hover:text-blue-500 focus:outline-none"
+                                        >
+                                            {{ member.member_name }}
+                                        </button>
+                                    </nav>
+                                </div>
+                                <div class="bg-white mb-4">
+                                    <nav class="flex flex-col sm:flex-row">
+                                        <button
+                                            v-for="(category, categoryKey) in memberCategoryList[memberTabId]"
+                                            @click="setCategoryTabId(categoryKey)"
+                                            v-bind:class="{'text-blue-500 border-b-2 font-medium border-blue-500': categoryTabId === String(categoryKey)}"
+                                            class="text-gray-600 py-4 px-6 block hover:text-blue-500 focus:outline-none"
+                                        >
+                                            {{ category.category_name }}
+                                        </button>
+                                    </nav>
+                                </div>
+
+                                <div v-for="(member, memberKey) in memberList">
+                                    <div v-for="(category, categoryKey) in memberCategoryList[member.member_id]" class="flex justify-center">
+                                        <table
+                                            class="table-auto w-full text-left whitespace-no-wrap radius"
+                                            v-show="String(member.member_id) === memberTabId && String(categoryKey) === categoryTabId"
+                                        >
+                                            <thead>
+                                                <tr>
+                                                    <th
+                                                        class="border border-gray-400 px-4 py-3 title-font tracking-wider font-medium text-gray-900 text-sm bg-gray-200 text-center"
+                                                        v-for="(item, itemKey) in paymentItemTitle"
+                                                    >
+                                                        {{ item }}
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="rowPayment in getDisplayRowCount(member.member_id, categoryKey)">
+                                                    <td
+                                                        class="border border-gray-400 border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end"
+                                                        v-for="(item, itemKey) in paymentItemTitle"
+                                                        nowrap
+                                                    >
+                                                        <div
+                                                            v-if="item === '明細番号'"
+                                                            v-bind:id="itemPrefixForQuerySelector + '_' + member.member_id + '_' + categoryKey + '_' + rowPayment + '_' + paymentItemTitle.indexOf('明細番号')"
+                                                        >
+                                                            {{
+                                                                getCategorizedPaymentId(
+                                                                    member.member_id,
+                                                                    categoryKey,
+                                                                    rowPayment
+                                                                )
+                                                            }}
+                                                        </div>
+                                                        <div v-if="item === '金額'" class="flex justify-center">
+                                                            <input
+                                                                type="text"
+                                                                class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out w-full"
+                                                                :value=
+                                                                    "
+                                                                        separateCommaOrBlank(
+                                                                            getPaymentProperty(
+                                                                                member.member_id,
+                                                                                categoryKey,
+                                                                                rowPayment,
+                                                                                'amount'
+                                                                            )
+                                                                        )
+                                                                    "
+                                                                @keypress.enter=
+                                                                    "
+                                                                        submitUpdatePayment(
+                                                                            member.member_id,
+                                                                            categoryKey,
+                                                                            rowPayment
+                                                                         )
+                                                                    "
+                                                                @focus="removeCommaOnEvent($event)"
+                                                                @blur="insertCommaOnEvent($event)"
+                                                                v-bind:id="itemPrefixForQuerySelector + '_' + member.member_id + '_' + categoryKey + '_' + rowPayment + '_' + paymentItemTitle.indexOf('金額')"
+                                                            >
+                                                        </div>
+                                                        <div v-if="item === '日付'" class="flex justify-center">
+                                                            <input
+                                                                type="text"
+                                                                class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out w-full"
+                                                                :value=
+                                                                    "
+                                                                        getPaymentProperty(
+                                                                            member.member_id,
+                                                                            categoryKey,
+                                                                            rowPayment,
+                                                                            'payment_date'
+                                                                        )
+                                                                    "
+                                                                @keypress.enter=
+                                                                    "
+                                                                        submitUpdatePayment(
+                                                                            member.member_id,
+                                                                            categoryKey,
+                                                                            rowPayment
+                                                                         )
+                                                                    "
+                                                                @blur="separateHyphenEvent($event)"
+                                                                v-bind:id="itemPrefixForQuerySelector + '_' + member.member_id + '_' + categoryKey + '_' + rowPayment + '_' + paymentItemTitle.indexOf('日付')"
+                                                            >
+                                                        </div>
+                                                        <div v-if="item === '名目'" class="flex justify-center">
+                                                            <input
+                                                                type="text"
+                                                                class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out w-full"
+                                                                :value=
+                                                                    "
+                                                                        getPaymentProperty(
+                                                                            member.member_id,
+                                                                            categoryKey,
+                                                                            rowPayment,
+                                                                            'payment_label'
+                                                                        )
+                                                                    "
+                                                                @keypress.enter=
+                                                                    "
+                                                                        submitUpdatePayment(
+                                                                            member.member_id,
+                                                                            categoryKey,
+                                                                            rowPayment
+                                                                         )
+                                                                    "
+                                                                v-bind:id="itemPrefixForQuerySelector + '_' + member.member_id + '_' + categoryKey + '_' + rowPayment + '_' + paymentItemTitle.indexOf('名目')"
+                                                            >
+                                                        </div>
+                                                        <div v-if="item === '操作'">
+                                                            <input
+                                                                type="button"
+                                                                class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none focus:ring hover:bg-indigo-600 rounded text-lg"
+                                                                value="更新"
+                                                                @click=
+                                                                    "
+                                                                        submitUpdatePayment(
+                                                                            member.member_id,
+                                                                            categoryKey,
+                                                                            rowPayment
+                                                                         )
+                                                                    "
+                                                            >
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td
+                                                        class="border border-gray-400 border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end"
+                                                        v-for="(item, itemKey) in paymentItemTitle"
+                                                        nowrap
+                                                    >
+                                                        <div
+                                                            v-if="item === '明細番号'"
+                                                            v-bind:id="newLineAmountPrefix + '_' + member.member_id + '_' + categoryKey + '_0_' + paymentItemTitle.indexOf('明細番号')"
+                                                        >
+                                                            {{ newLineTitle }}
+                                                        </div>
+                                                        <div v-if="item === '金額'" class="flex justify-center">
+                                                            <input
+                                                                type="text"
+                                                                class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out w-full"
+                                                                @keypress.enter=
+                                                                    "
+                                                                        submitInsertPayment(
+                                                                            member.group_id,
+                                                                            member.member_id,
+                                                                            categoryKey
+                                                                        )
+                                                                    "
+                                                                :value="getTextBlank()"
+                                                                @focus="removeCommaOnEvent($event)"
+                                                                @blur="insertCommaOnEvent($event)"
+                                                                v-bind:id="newLineAmountPrefix + '_' + member.member_id + '_' + categoryKey + '_0_' + paymentItemTitle.indexOf('金額')"
+                                                            >
+                                                        </div>
+                                                        <div v-if="item === '日付'" class="flex justify-center">
+                                                            <input
+                                                                type="text"
+                                                                class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out w-full"
+                                                                @keypress.enter=
+                                                                    "
+                                                                        submitInsertPayment(
+                                                                            member.group_id,
+                                                                            member.member_id,
+                                                                            categoryKey
+                                                                        )
+                                                                    "
+                                                                :value="getTextBlank()"
+                                                                @blur="separateHyphenEvent($event)"
+                                                                v-bind:id="newLineAmountPrefix + '_' + member.member_id + '_' + categoryKey + '_0_' + paymentItemTitle.indexOf('日付')"
+                                                            >
+                                                        </div>
+                                                        <div v-if="item === '名目'" class="flex justify-center">
+                                                            <input
+                                                                type="text"
+                                                                class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out w-full"
+                                                                @keypress.enter=
+                                                                    "
+                                                                        submitInsertPayment(
+                                                                            member.group_id,
+                                                                            member.member_id,
+                                                                            categoryKey
+                                                                        )
+                                                                    "
+                                                                :value="getTextBlank()"
+                                                                v-bind:id="newLineAmountPrefix + '_' + member.member_id + '_' + categoryKey + '_0_' + paymentItemTitle.indexOf('名目')"
+                                                            >
+                                                        </div>
+                                                        <div v-if="item === '操作'">
+                                                            <input
+                                                                type="button"
+                                                                class="flex mx-auto text-white bg-green-500 border-0 py-2 px-8 focus:outline-none focus:ring focus:ring-green-300 hover:bg-green-600 rounded text-lg"
+                                                                value="追加"
+                                                                @click=
+                                                                    "
+                                                                        submitInsertPayment(
+                                                                            member.group_id,
+                                                                            member.member_id,
+                                                                            categoryKey
+                                                                        )
+                                                                    "
+                                                            >
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </section>
