@@ -397,7 +397,24 @@ class PaymentController extends Controller
      */
     public function destroy(Payment $payment)
     {
-        //
+        $paymentDTO = $this->paymentService->deletePayment($this->setPaymentFromModelToDTO($payment));
+        $deletedPaymentArray = $this->getArrayPayment($paymentDTO);
+
+        $paymentsAndRelatedDataForEdit = $this->paymentService->getPaymentsAndRelatedDataForEdit($paymentDTO->getSummaryYm(), $paymentDTO->getGroupId());
+        $memberHistoryArray = $this->getArrayMemberHistories($paymentsAndRelatedDataForEdit->getMemberHistories());
+        $memberCategoryHistoryArray = $this->getArrayMemberCategoryHistories($paymentsAndRelatedDataForEdit->getMemberCategoryHistories());
+        $paymentArray = $this->getArrayPaymentsForEdit($paymentsAndRelatedDataForEdit->getPayments());
+
+        return Inertia::render(
+            'Payments/edit',
+            [
+                'summary_ym' => (string)$payment->summary_ym,
+                'members' => $memberHistoryArray,
+                'memberCategories' => $memberCategoryHistoryArray,
+                'payments' => $paymentArray,
+                'updatedPayment' => $deletedPaymentArray,
+            ]
+        );
     }
 
     public function destroyRelatedPayments(string $summary_ym): \Illuminate\Http\RedirectResponse

@@ -28,6 +28,10 @@ const updateForm = useForm({
     payment_label: ""
 })
 
+const deleteForm = useForm({
+    payment_id: ""
+})
+
 onBeforeMount(() => {
     initBeforeRendering()
 })
@@ -282,6 +286,25 @@ const getNewPayment = propertyName => {
 const setNewPayment = (propertyName, value) => {
     newLinePayment[propertyName] = value
 }
+
+const submitDeletePayment = (memberId, categoryId, rowPayment) => {
+    const memberObj = memberList.value.find(e => e.member_id === memberId);
+    const memberCategoryObj = memberCategoryList[memberId][categoryId];
+    deleteForm.payment_id = getPaymentProperty(memberId, categoryId, rowPayment, 'payment_id')
+
+    deleteForm.delete(
+        route(
+            'payments.destroy',
+            { payment: deleteForm.payment_id }
+        ),
+        {
+            onBefore: () => confirm('本当に削除しますか？' + '\n'
+                + 'メンバー名 : ' + memberObj.member_name + '\n'
+                + 'カテゴリ名 : ' + memberCategoryObj.category_name + '\n'
+                + '行番号 : ' + rowPayment)
+        }
+    )
+}
 </script>
 
 <style scoped>
@@ -407,35 +430,32 @@ const setNewPayment = (propertyName, value) => {
                                                             <input
                                                                 type="text"
                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out w-full"
-                                                                :value=
-                                                                    "
-                                                                        separateCommaOrBlank(
-                                                                            getPaymentProperty(
-                                                                                member.member_id,
-                                                                                categoryKey,
-                                                                                rowPayment,
-                                                                                'amount'
-                                                                            )
-                                                                        )
-                                                                    "
-                                                                @input=
-                                                                    "
-                                                                        setPaymentProperty(
+                                                                :value="
+                                                                    separateCommaOrBlank(
+                                                                        getPaymentProperty(
                                                                             member.member_id,
                                                                             categoryKey,
                                                                             rowPayment,
-                                                                            'amount',
-                                                                            removeComma($event.target.value)
+                                                                            'amount'
                                                                         )
-                                                                    "
-                                                                @keypress.enter=
-                                                                    "
-                                                                        submitUpdatePayment(
-                                                                            member.member_id,
-                                                                            categoryKey,
-                                                                            rowPayment
-                                                                         )
-                                                                    "
+                                                                    )
+                                                                "
+                                                                @input="
+                                                                    setPaymentProperty(
+                                                                        member.member_id,
+                                                                        categoryKey,
+                                                                        rowPayment,
+                                                                        'amount',
+                                                                        removeComma($event.target.value)
+                                                                    )
+                                                                "
+                                                                @keypress.enter="
+                                                                    submitUpdatePayment(
+                                                                        member.member_id,
+                                                                        categoryKey,
+                                                                        rowPayment
+                                                                     )
+                                                                "
                                                                 @focus="removeCommaOnEvent($event)"
                                                                 @blur="insertCommaOnEvent($event)"
                                                                 v-bind:id="itemPrefixForQuerySelector + '_' + member.member_id + '_' + categoryKey + '_' + rowPayment + '_' + paymentItemTitle.indexOf('金額')"
@@ -445,33 +465,30 @@ const setNewPayment = (propertyName, value) => {
                                                             <input
                                                                 type="text"
                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out w-full"
-                                                                :value=
-                                                                    "
-                                                                        getPaymentProperty(
-                                                                            member.member_id,
-                                                                            categoryKey,
-                                                                            rowPayment,
-                                                                            'payment_date'
-                                                                        )
-                                                                    "
-                                                                @input=
-                                                                    "
-                                                                        setPaymentProperty(
-                                                                            member.member_id,
-                                                                            categoryKey,
-                                                                            rowPayment,
-                                                                            'payment_date',
-                                                                            separateHyphen($event.target.value)
-                                                                        )
-                                                                    "
-                                                                @keypress.enter=
-                                                                    "
-                                                                        submitUpdatePayment(
-                                                                            member.member_id,
-                                                                            categoryKey,
-                                                                            rowPayment
-                                                                         )
-                                                                    "
+                                                                :value="
+                                                                    getPaymentProperty(
+                                                                        member.member_id,
+                                                                        categoryKey,
+                                                                        rowPayment,
+                                                                        'payment_date'
+                                                                    )
+                                                                "
+                                                                @input="
+                                                                    setPaymentProperty(
+                                                                        member.member_id,
+                                                                        categoryKey,
+                                                                        rowPayment,
+                                                                        'payment_date',
+                                                                        separateHyphen($event.target.value)
+                                                                    )
+                                                                "
+                                                                @keypress.enter="
+                                                                    submitUpdatePayment(
+                                                                        member.member_id,
+                                                                        categoryKey,
+                                                                        rowPayment
+                                                                     )
+                                                                "
                                                                 @blur="separateHyphenEvent($event)"
                                                                 v-bind:id="itemPrefixForQuerySelector + '_' + member.member_id + '_' + categoryKey + '_' + rowPayment + '_' + paymentItemTitle.indexOf('日付')"
                                                             >
@@ -480,33 +497,30 @@ const setNewPayment = (propertyName, value) => {
                                                             <input
                                                                 type="text"
                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out w-full"
-                                                                :value=
-                                                                    "
-                                                                        getPaymentProperty(
-                                                                            member.member_id,
-                                                                            categoryKey,
-                                                                            rowPayment,
-                                                                            'payment_label'
-                                                                        )
-                                                                    "
-                                                                @input=
-                                                                    "
-                                                                        setPaymentProperty(
-                                                                            member.member_id,
-                                                                            categoryKey,
-                                                                            rowPayment,
-                                                                            'payment_label',
-                                                                            $event.target.value
-                                                                        )
-                                                                    "
-                                                                @keypress.enter=
-                                                                    "
-                                                                        submitUpdatePayment(
-                                                                            member.member_id,
-                                                                            categoryKey,
-                                                                            rowPayment
-                                                                         )
-                                                                    "
+                                                                :value="
+                                                                    getPaymentProperty(
+                                                                        member.member_id,
+                                                                        categoryKey,
+                                                                        rowPayment,
+                                                                        'payment_label'
+                                                                    )
+                                                                "
+                                                                @input="
+                                                                    setPaymentProperty(
+                                                                        member.member_id,
+                                                                        categoryKey,
+                                                                        rowPayment,
+                                                                        'payment_label',
+                                                                        $event.target.value
+                                                                    )
+                                                                "
+                                                                @keypress.enter="
+                                                                    submitUpdatePayment(
+                                                                        member.member_id,
+                                                                        categoryKey,
+                                                                        rowPayment
+                                                                     )
+                                                                "
                                                                 v-bind:id="itemPrefixForQuerySelector + '_' + member.member_id + '_' + categoryKey + '_' + rowPayment + '_' + paymentItemTitle.indexOf('名目')"
                                                             >
                                                         </div>
@@ -518,14 +532,13 @@ const setNewPayment = (propertyName, value) => {
                                                                         type="button"
                                                                         class="flex text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none focus:ring hover:bg-indigo-600 rounded-l text-lg z-10"
                                                                         value="更新"
-                                                                        @click=
-                                                                            "
-                                                                                submitUpdatePayment(
-                                                                                    member.member_id,
-                                                                                    categoryKey,
-                                                                                    rowPayment
-                                                                                 )
-                                                                            "
+                                                                        @click="
+                                                                            submitUpdatePayment(
+                                                                                member.member_id,
+                                                                                categoryKey,
+                                                                                rowPayment
+                                                                             )
+                                                                        "
                                                                     >
                                                                     <!-- ブルダウンボタン -->
                                                                     <input
@@ -551,21 +564,26 @@ const setNewPayment = (propertyName, value) => {
                                                                         type="button"
                                                                         class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none focus:ring hover:bg-indigo-600 rounded text-lg shadow-2xl shadow-black"
                                                                         value="更新"
-                                                                        @click=
-                                                                            "
-                                                                                submitUpdatePayment(
-                                                                                    member.member_id,
-                                                                                    categoryKey,
-                                                                                    rowPayment
-                                                                                 )
-                                                                            "
+                                                                        @click="
+                                                                            submitUpdatePayment(
+                                                                                member.member_id,
+                                                                                categoryKey,
+                                                                                rowPayment
+                                                                             )
+                                                                        "
                                                                     >
                                                                     <!-- 削除ボタン -->
                                                                     <input
                                                                         type="button"
                                                                         class="flex mx-auto text-white bg-red-500 border-0 py-2 px-8 focus:outline-none focus:ring hover:bg-red-600 rounded text-lg shadow-2xl shadow-black"
                                                                         value="削除"
-                                                                        @click="(function () {console.log('delete: ', member.member_id, categoryKey, rowPayment)}())"
+                                                                        @click="
+                                                                            submitDeletePayment(
+                                                                                member.member_id,
+                                                                                categoryKey,
+                                                                                rowPayment
+                                                                            )
+                                                                        "
                                                                     >
                                                                 </div>
                                                             </div>
@@ -590,17 +608,15 @@ const setNewPayment = (propertyName, value) => {
                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out w-full"
                                                                 :value="separateCommaOrBlank(getNewPayment('amount'))"
                                                                 @input="setNewPayment('amount', removeComma($event.target.value))"
-                                                                @keypress.enter=
-                                                                    "
-                                                                        separateCommaOrBlank(
-                                                                            submitInsertPayment(
-                                                                                member.group_id,
-                                                                                member.member_id,
-                                                                                categoryKey
-                                                                            )
+                                                                @keypress.enter="
+                                                                    separateCommaOrBlank(
+                                                                        submitInsertPayment(
+                                                                            member.group_id,
+                                                                            member.member_id,
+                                                                            categoryKey
                                                                         )
-
-                                                                    "
+                                                                    )
+                                                                "
                                                                 @focus="removeCommaOnEvent($event)"
                                                                 @blur="insertCommaOnEvent($event)"
                                                                 v-bind:id="newLineAmountPrefix + '_' + member.member_id + '_' + categoryKey + '_0_' + paymentItemTitle.indexOf('金額')"
@@ -612,14 +628,13 @@ const setNewPayment = (propertyName, value) => {
                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out w-full"
                                                                 :value="getNewPayment('payment_date')"
                                                                 @input="setNewPayment('payment_date', separateHyphen($event.target.value))"
-                                                                @keypress.enter=
-                                                                    "
-                                                                        submitInsertPayment(
-                                                                            member.group_id,
-                                                                            member.member_id,
-                                                                            categoryKey
-                                                                        )
-                                                                    "
+                                                                @keypress.enter="
+                                                                    submitInsertPayment(
+                                                                        member.group_id,
+                                                                        member.member_id,
+                                                                        categoryKey
+                                                                    )
+                                                                "
                                                                 @blur="separateHyphenEvent($event)"
                                                                 v-bind:id="newLineAmountPrefix + '_' + member.member_id + '_' + categoryKey + '_0_' + paymentItemTitle.indexOf('日付')"
                                                             >
@@ -630,14 +645,13 @@ const setNewPayment = (propertyName, value) => {
                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out w-full"
                                                                 :value="getNewPayment('payment_label')"
                                                                 @input="setNewPayment('payment_label', $event.target.value)"
-                                                                @keypress.enter=
-                                                                    "
-                                                                        submitInsertPayment(
-                                                                            member.group_id,
-                                                                            member.member_id,
-                                                                            categoryKey
-                                                                        )
-                                                                    "
+                                                                @keypress.enter="
+                                                                    submitInsertPayment(
+                                                                        member.group_id,
+                                                                        member.member_id,
+                                                                        categoryKey
+                                                                    )
+                                                                "
                                                                 v-bind:id="newLineAmountPrefix + '_' + member.member_id + '_' + categoryKey + '_0_' + paymentItemTitle.indexOf('名目')"
                                                             >
                                                         </div>
@@ -646,14 +660,13 @@ const setNewPayment = (propertyName, value) => {
                                                                 type="button"
                                                                 class="flex mx-auto text-white bg-green-500 border-0 py-2 px-8 focus:outline-none focus:ring focus:ring-green-300 hover:bg-green-600 rounded text-lg"
                                                                 value="追加"
-                                                                @click=
-                                                                    "
-                                                                        submitInsertPayment(
-                                                                            member.group_id,
-                                                                            member.member_id,
-                                                                            categoryKey
-                                                                        )
-                                                                    "
+                                                                @click="
+                                                                    submitInsertPayment(
+                                                                        member.group_id,
+                                                                        member.member_id,
+                                                                        categoryKey
+                                                                    )
+                                                                "
                                                             >
                                                         </div>
                                                     </td>

@@ -56,4 +56,6 @@ interface PaymentService
     public function updatePayment(Payment $payment): Payment;
 
     public function deleteMonthlyPayments(int $summaryYm): void;
+
+    public function deletePayment(Payment $payment): Payment;
 }
