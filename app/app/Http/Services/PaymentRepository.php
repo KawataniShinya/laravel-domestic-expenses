@@ -53,4 +53,6 @@ interface PaymentRepository
     public function updatePayment(Payment $payment): Payment;
 
     public function deletePayments(string $summary_ym, int $group_id, array $memberIDs): void;
+
+    public function deletePayment(Payment $payment): Payment;
 }

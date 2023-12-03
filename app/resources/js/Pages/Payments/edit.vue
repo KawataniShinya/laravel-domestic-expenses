@@ -28,6 +28,10 @@ const updateForm = useForm({
     payment_label: ""
 })
 
+const deleteForm = useForm({
+    payment_id: ""
+})
+
 onBeforeMount(() => {
     initBeforeRendering()
 })
@@ -39,6 +43,8 @@ onBeforeUpdate(() => {
 const memberList = ref([])
 let memberCategoryList = ref()
 let paymentList = ref()
+let newLinePayment = ref()
+let IDdropdownOperator = ref(null)
 const initBeforeRendering = () => {
     memberList.value = []
     props.members.forEach(member => {
@@ -92,8 +98,24 @@ const initBeforeRendering = () => {
         paymentList[member_id][category_id][categorized_payment_id] = paymentProperty
     })
 
+    newLinePayment = {
+        amount: '',
+        payment_date: '',
+        payment_label: ''
+    }
+
     setMemberTabId(memberList.value[0].member_id)
     setCategoryTabId(Object.entries(memberCategoryList[memberList.value[0].member_id])[0][0])
+    IDdropdownOperator.value = ''
+}
+
+const toggleDropdownOperator = arg => {
+    if (IDdropdownOperator.value === arg) {
+        IDdropdownOperator.value = ''
+    }
+    else {
+        IDdropdownOperator.value = arg
+    }
 }
 
 onUpdated(() => {
@@ -191,16 +213,19 @@ const getCategorizedPaymentId = (memberId, categoryId, rowPayment) => {
 
 const getPaymentProperty = (memberId, categoryId, rowPayment, propertyName) => {
     const categorizedPaymentId = getCategorizedPaymentId(memberId, categoryId, rowPayment)
-    if (typeof categorizedPaymentId !== "number") {
-        return ""
+    if (typeof categorizedPaymentId === "number") {
+        return paymentList[memberId][categoryId][categorizedPaymentId][propertyName]
     }
     else {
-        return paymentList[memberId][categoryId][categorizedPaymentId][propertyName]
+        return ""
     }
 }
 
-const getTextBlank = () => {
-    return ''
+const setPaymentProperty = (memberId, categoryId, rowPayment, propertyName, value) => {
+    const categorizedPaymentId = getCategorizedPaymentId(memberId, categoryId, rowPayment)
+    if (typeof categorizedPaymentId === "number") {
+        paymentList[memberId][categoryId][categorizedPaymentId][propertyName] = value
+    }
 }
 
 const submitInsertPayment = (group_id, member_id, category_id) => {
@@ -249,6 +274,36 @@ const setMemberTabId = arg => {
 let categoryTabId = ref(null);
 const setCategoryTabId = arg => {
     categoryTabId.value = String(arg)
+
+    newLinePayment.amount = ''
+    newLinePayment.payment_date = ''
+    newLinePayment.payment_label = ''
+}
+
+const getNewPayment = propertyName => {
+    return newLinePayment[propertyName]
+}
+const setNewPayment = (propertyName, value) => {
+    newLinePayment[propertyName] = value
+}
+
+const submitDeletePayment = (memberId, categoryId, rowPayment) => {
+    const memberObj = memberList.value.find(e => e.member_id === memberId);
+    const memberCategoryObj = memberCategoryList[memberId][categoryId];
+    deleteForm.payment_id = getPaymentProperty(memberId, categoryId, rowPayment, 'payment_id')
+
+    deleteForm.delete(
+        route(
+            'payments.destroy',
+            { payment: deleteForm.payment_id }
+        ),
+        {
+            onBefore: () => confirm('本当に削除しますか？' + '\n'
+                + 'メンバー名 : ' + memberObj.member_name + '\n'
+                + 'カテゴリ名 : ' + memberCategoryObj.category_name + '\n'
+                + '行番号 : ' + rowPayment)
+        }
+    )
 }
 </script>
 
@@ -375,25 +430,32 @@ const setCategoryTabId = arg => {
                                                             <input
                                                                 type="text"
                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out w-full"
-                                                                :value=
-                                                                    "
-                                                                        separateCommaOrBlank(
-                                                                            getPaymentProperty(
-                                                                                member.member_id,
-                                                                                categoryKey,
-                                                                                rowPayment,
-                                                                                'amount'
-                                                                            )
-                                                                        )
-                                                                    "
-                                                                @keypress.enter=
-                                                                    "
-                                                                        submitUpdatePayment(
+                                                                :value="
+                                                                    separateCommaOrBlank(
+                                                                        getPaymentProperty(
                                                                             member.member_id,
                                                                             categoryKey,
-                                                                            rowPayment
-                                                                         )
-                                                                    "
+                                                                            rowPayment,
+                                                                            'amount'
+                                                                        )
+                                                                    )
+                                                                "
+                                                                @input="
+                                                                    setPaymentProperty(
+                                                                        member.member_id,
+                                                                        categoryKey,
+                                                                        rowPayment,
+                                                                        'amount',
+                                                                        removeComma($event.target.value)
+                                                                    )
+                                                                "
+                                                                @keypress.enter="
+                                                                    submitUpdatePayment(
+                                                                        member.member_id,
+                                                                        categoryKey,
+                                                                        rowPayment
+                                                                     )
+                                                                "
                                                                 @focus="removeCommaOnEvent($event)"
                                                                 @blur="insertCommaOnEvent($event)"
                                                                 v-bind:id="itemPrefixForQuerySelector + '_' + member.member_id + '_' + categoryKey + '_' + rowPayment + '_' + paymentItemTitle.indexOf('金額')"
@@ -403,23 +465,30 @@ const setCategoryTabId = arg => {
                                                             <input
                                                                 type="text"
                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out w-full"
-                                                                :value=
-                                                                    "
-                                                                        getPaymentProperty(
-                                                                            member.member_id,
-                                                                            categoryKey,
-                                                                            rowPayment,
-                                                                            'payment_date'
-                                                                        )
-                                                                    "
-                                                                @keypress.enter=
-                                                                    "
-                                                                        submitUpdatePayment(
-                                                                            member.member_id,
-                                                                            categoryKey,
-                                                                            rowPayment
-                                                                         )
-                                                                    "
+                                                                :value="
+                                                                    getPaymentProperty(
+                                                                        member.member_id,
+                                                                        categoryKey,
+                                                                        rowPayment,
+                                                                        'payment_date'
+                                                                    )
+                                                                "
+                                                                @input="
+                                                                    setPaymentProperty(
+                                                                        member.member_id,
+                                                                        categoryKey,
+                                                                        rowPayment,
+                                                                        'payment_date',
+                                                                        separateHyphen($event.target.value)
+                                                                    )
+                                                                "
+                                                                @keypress.enter="
+                                                                    submitUpdatePayment(
+                                                                        member.member_id,
+                                                                        categoryKey,
+                                                                        rowPayment
+                                                                     )
+                                                                "
                                                                 @blur="separateHyphenEvent($event)"
                                                                 v-bind:id="itemPrefixForQuerySelector + '_' + member.member_id + '_' + categoryKey + '_' + rowPayment + '_' + paymentItemTitle.indexOf('日付')"
                                                             >
@@ -428,40 +497,96 @@ const setCategoryTabId = arg => {
                                                             <input
                                                                 type="text"
                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out w-full"
-                                                                :value=
-                                                                    "
-                                                                        getPaymentProperty(
-                                                                            member.member_id,
-                                                                            categoryKey,
-                                                                            rowPayment,
-                                                                            'payment_label'
-                                                                        )
-                                                                    "
-                                                                @keypress.enter=
-                                                                    "
-                                                                        submitUpdatePayment(
-                                                                            member.member_id,
-                                                                            categoryKey,
-                                                                            rowPayment
-                                                                         )
-                                                                    "
+                                                                :value="
+                                                                    getPaymentProperty(
+                                                                        member.member_id,
+                                                                        categoryKey,
+                                                                        rowPayment,
+                                                                        'payment_label'
+                                                                    )
+                                                                "
+                                                                @input="
+                                                                    setPaymentProperty(
+                                                                        member.member_id,
+                                                                        categoryKey,
+                                                                        rowPayment,
+                                                                        'payment_label',
+                                                                        $event.target.value
+                                                                    )
+                                                                "
+                                                                @keypress.enter="
+                                                                    submitUpdatePayment(
+                                                                        member.member_id,
+                                                                        categoryKey,
+                                                                        rowPayment
+                                                                     )
+                                                                "
                                                                 v-bind:id="itemPrefixForQuerySelector + '_' + member.member_id + '_' + categoryKey + '_' + rowPayment + '_' + paymentItemTitle.indexOf('名目')"
                                                             >
                                                         </div>
                                                         <div v-if="item === '操作'">
-                                                            <input
-                                                                type="button"
-                                                                class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none focus:ring hover:bg-indigo-600 rounded text-lg"
-                                                                value="更新"
-                                                                @click=
-                                                                    "
-                                                                        submitUpdatePayment(
-                                                                            member.member_id,
-                                                                            categoryKey,
-                                                                            rowPayment
-                                                                         )
-                                                                    "
-                                                            >
+                                                            <div class="flex justify-center items-center relative">
+                                                                <div class="flex">
+                                                                    <!-- デフォルトのボタン -->
+                                                                    <input
+                                                                        type="button"
+                                                                        class="flex text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none focus:ring hover:bg-indigo-600 rounded-l text-lg z-10"
+                                                                        value="更新"
+                                                                        @click="
+                                                                            submitUpdatePayment(
+                                                                                member.member_id,
+                                                                                categoryKey,
+                                                                                rowPayment
+                                                                             )
+                                                                        "
+                                                                    >
+                                                                    <!-- ブルダウンボタン -->
+                                                                    <input
+                                                                        type="button"
+                                                                        class="text-indigo bg-indigo-200 border-0 py-2 px-3 focus:outline-none hover:bg-indigo-300 rounded-r text-lg z-0"
+                                                                        value="▽"
+                                                                        @click="toggleDropdownOperator(itemPrefixForQuerySelector + '_' + member.member_id + '_' + categoryKey + '_' + rowPayment + '_' + paymentItemTitle.indexOf('操作'))"
+                                                                    >
+                                                                </div>
+
+                                                                <!-- プルダウンメニュー -->
+                                                                <div
+                                                                    class="absolute top-0 left-auto right-auto mr-9 ring-opacity-5 z-20"
+                                                                    v-show="IDdropdownOperator === itemPrefixForQuerySelector + '_' + member.member_id + '_' + categoryKey + '_' + rowPayment + '_' + paymentItemTitle.indexOf('操作')"
+                                                                >
+                                                                    <input
+                                                                        type="button"
+                                                                        class="flex mx-auto text-slate-600 bg-slate-200 border-0 py-2 px-4 focus:outline-none focus:ring rounded-l text-lg shadow-2xl shadow-black"
+                                                                        value="操作選択"
+                                                                    >
+                                                                    <!-- 更新ボタン -->
+                                                                    <input
+                                                                        type="button"
+                                                                        class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none focus:ring hover:bg-indigo-600 rounded text-lg shadow-2xl shadow-black"
+                                                                        value="更新"
+                                                                        @click="
+                                                                            submitUpdatePayment(
+                                                                                member.member_id,
+                                                                                categoryKey,
+                                                                                rowPayment
+                                                                             )
+                                                                        "
+                                                                    >
+                                                                    <!-- 削除ボタン -->
+                                                                    <input
+                                                                        type="button"
+                                                                        class="flex mx-auto text-white bg-red-500 border-0 py-2 px-8 focus:outline-none focus:ring hover:bg-red-600 rounded text-lg shadow-2xl shadow-black"
+                                                                        value="削除"
+                                                                        @click="
+                                                                            submitDeletePayment(
+                                                                                member.member_id,
+                                                                                categoryKey,
+                                                                                rowPayment
+                                                                            )
+                                                                        "
+                                                                    >
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -481,15 +606,17 @@ const setCategoryTabId = arg => {
                                                             <input
                                                                 type="text"
                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out w-full"
-                                                                @keypress.enter=
-                                                                    "
+                                                                :value="separateCommaOrBlank(getNewPayment('amount'))"
+                                                                @input="setNewPayment('amount', removeComma($event.target.value))"
+                                                                @keypress.enter="
+                                                                    separateCommaOrBlank(
                                                                         submitInsertPayment(
                                                                             member.group_id,
                                                                             member.member_id,
                                                                             categoryKey
                                                                         )
-                                                                    "
-                                                                :value="getTextBlank()"
+                                                                    )
+                                                                "
                                                                 @focus="removeCommaOnEvent($event)"
                                                                 @blur="insertCommaOnEvent($event)"
                                                                 v-bind:id="newLineAmountPrefix + '_' + member.member_id + '_' + categoryKey + '_0_' + paymentItemTitle.indexOf('金額')"
@@ -499,15 +626,15 @@ const setCategoryTabId = arg => {
                                                             <input
                                                                 type="text"
                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out w-full"
-                                                                @keypress.enter=
-                                                                    "
-                                                                        submitInsertPayment(
-                                                                            member.group_id,
-                                                                            member.member_id,
-                                                                            categoryKey
-                                                                        )
-                                                                    "
-                                                                :value="getTextBlank()"
+                                                                :value="getNewPayment('payment_date')"
+                                                                @input="setNewPayment('payment_date', separateHyphen($event.target.value))"
+                                                                @keypress.enter="
+                                                                    submitInsertPayment(
+                                                                        member.group_id,
+                                                                        member.member_id,
+                                                                        categoryKey
+                                                                    )
+                                                                "
                                                                 @blur="separateHyphenEvent($event)"
                                                                 v-bind:id="newLineAmountPrefix + '_' + member.member_id + '_' + categoryKey + '_0_' + paymentItemTitle.indexOf('日付')"
                                                             >
@@ -516,15 +643,15 @@ const setCategoryTabId = arg => {
                                                             <input
                                                                 type="text"
                                                                 class="bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out w-full"
-                                                                @keypress.enter=
-                                                                    "
-                                                                        submitInsertPayment(
-                                                                            member.group_id,
-                                                                            member.member_id,
-                                                                            categoryKey
-                                                                        )
-                                                                    "
-                                                                :value="getTextBlank()"
+                                                                :value="getNewPayment('payment_label')"
+                                                                @input="setNewPayment('payment_label', $event.target.value)"
+                                                                @keypress.enter="
+                                                                    submitInsertPayment(
+                                                                        member.group_id,
+                                                                        member.member_id,
+                                                                        categoryKey
+                                                                    )
+                                                                "
                                                                 v-bind:id="newLineAmountPrefix + '_' + member.member_id + '_' + categoryKey + '_0_' + paymentItemTitle.indexOf('名目')"
                                                             >
                                                         </div>
@@ -533,14 +660,13 @@ const setCategoryTabId = arg => {
                                                                 type="button"
                                                                 class="flex mx-auto text-white bg-green-500 border-0 py-2 px-8 focus:outline-none focus:ring focus:ring-green-300 hover:bg-green-600 rounded text-lg"
                                                                 value="追加"
-                                                                @click=
-                                                                    "
-                                                                        submitInsertPayment(
-                                                                            member.group_id,
-                                                                            member.member_id,
-                                                                            categoryKey
-                                                                        )
-                                                                    "
+                                                                @click="
+                                                                    submitInsertPayment(
+                                                                        member.group_id,
+                                                                        member.member_id,
+                                                                        categoryKey
+                                                                    )
+                                                                "
                                                             >
                                                         </div>
                                                     </td>

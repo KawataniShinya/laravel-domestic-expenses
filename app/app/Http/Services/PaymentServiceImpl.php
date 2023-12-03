@@ -269,4 +269,16 @@ class PaymentServiceImpl implements PaymentService
         }
         return $memberIDs;
     }
+
+    public function deletePayment(Payment $payment): Payment
+    {
+        $this->commonRepository->beginTransaction();
+        try {
+            $payment = $this->paymentRepository->deletePayment($payment);
+            $this->commonRepository->commit();
+            return $payment;
+        } catch (\Exception $e) {
+            $this->commonRepository->rollBack();
+        }
+    }
 }

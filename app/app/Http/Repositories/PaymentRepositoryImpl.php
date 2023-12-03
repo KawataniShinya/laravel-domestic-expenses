@@ -220,4 +220,14 @@ class PaymentRepositoryImpl implements PaymentRepository
             $payment->save();
         }
     }
+
+    public function deletePayment(\App\Http\Services\DTO\Common\Payment $payment): \App\Http\Services\DTO\Common\Payment
+    {
+        $paymentModel = Payment::find($payment->getPaymentId());
+        $paymentModel->del_flg = true;
+
+        $paymentModel->save();
+
+        return $payment;
+    }
 }
