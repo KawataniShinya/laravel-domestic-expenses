@@ -126,7 +126,7 @@ onUpdated(() => {
     }
 })
 
-const paymentItemTitle = ['明細番号', '金額', '日付', '名目', '操作']
+const paymentItemTitle = ['行番号(明細番号)', '金額', '日付', '名目', '操作']
 const itemPrefixForQuerySelector = "item"
 const forcusNewLineAmount = () => {
     const selector = '#' + newLineAmountPrefix + '_' + props.updatedPayment.member_id + '_' + props.updatedPayment.category_id + '_0_' + paymentItemTitle.indexOf('金額')
@@ -415,16 +415,24 @@ const submitDeletePayment = (memberId, categoryId, rowPayment) => {
                                                         nowrap
                                                     >
                                                         <div
-                                                            v-if="item === '明細番号'"
-                                                            v-bind:id="itemPrefixForQuerySelector + '_' + member.member_id + '_' + categoryKey + '_' + rowPayment + '_' + paymentItemTitle.indexOf('明細番号')"
+                                                            v-if="item === '行番号(明細番号)'"
                                                         >
-                                                            {{
-                                                                getCategorizedPaymentId(
-                                                                    member.member_id,
-                                                                    categoryKey,
-                                                                    rowPayment
+                                                            <span>{{ rowPayment }}</span>
+                                                            &nbsp;
+                                                            <span
+                                                                style="color:silver;"
+                                                                v-bind:id="itemPrefixForQuerySelector + '_' + member.member_id + '_' + categoryKey + '_' + rowPayment + '_' + paymentItemTitle.indexOf('明細番号')"
+                                                            >
+                                                                (
+                                                                    {{
+                                                                        getCategorizedPaymentId(
+                                                                            member.member_id,
+                                                                            categoryKey,
+                                                                            rowPayment
+                                                                        )
+                                                                    }}
                                                                 )
-                                                            }}
+                                                            </span>
                                                         </div>
                                                         <div v-if="item === '金額'" class="flex justify-center">
                                                             <input
@@ -597,7 +605,7 @@ const submitDeletePayment = (memberId, categoryId, rowPayment) => {
                                                         nowrap
                                                     >
                                                         <div
-                                                            v-if="item === '明細番号'"
+                                                            v-if="item === '行番号(明細番号)'"
                                                             v-bind:id="newLineAmountPrefix + '_' + member.member_id + '_' + categoryKey + '_0_' + paymentItemTitle.indexOf('明細番号')"
                                                         >
                                                             {{ newLineTitle }}
