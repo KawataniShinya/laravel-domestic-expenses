@@ -8,7 +8,8 @@ const props = defineProps({
     'members': Array,
     'memberCategories' : Array,
     'payments' : Array,
-    'updatedPayment' : Array
+    'updatedPayment' : Array,
+    'errors': Array,
 })
 
 const insertForm = useForm({

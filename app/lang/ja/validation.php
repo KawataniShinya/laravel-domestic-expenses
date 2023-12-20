@@ -164,6 +164,7 @@ return [
         'address' => '住所',
         'birthday' => '誕生日',
         'gender' => '性別',
+        'amount' => '金額',
     ],
 
 ];

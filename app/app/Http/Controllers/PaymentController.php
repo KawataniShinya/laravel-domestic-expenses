@@ -11,6 +11,8 @@ use App\Http\Services\DTO\PaymentService\PaymentTotalByMember;
 use App\Http\Services\DTO\PaymentService\PaymentTotalMonthly;
 use App\Http\Services\PaymentService;
 use App\Models\Payment;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -64,7 +66,7 @@ class PaymentController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(): \Illuminate\Http\Response
     {
         //
     }
@@ -73,9 +75,9 @@ class PaymentController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \App\Http\Requests\StorePaymentRequest  $request
-     * @return Response
+     * @return RedirectResponse
      */
-    public function store(StorePaymentRequest $request)
+    public function store(StorePaymentRequest $request): RedirectResponse
     {
         $insertedPayment = $this->paymentService->storePayment(
             $request->summary_ym,
@@ -88,20 +90,10 @@ class PaymentController extends Controller
         );
         $insertedPaymentArray = $this->getArrayPayment($insertedPayment);
 
-        $paymentsAndRelatedDataForEdit = $this->paymentService->getPaymentsAndRelatedDataForEdit($request->summary_ym, $request->group_id);
-        $memberHistoryArray = $this->getArrayMemberHistories($paymentsAndRelatedDataForEdit->getMemberHistories());
-        $memberCategoryHistoryArray = $this->getArrayMemberCategoryHistories($paymentsAndRelatedDataForEdit->getMemberCategoryHistories());
-        $paymentArray = $this->getArrayPaymentsForEdit($paymentsAndRelatedDataForEdit->getPayments());
-
-        return Inertia::render(
-            'Payments/edit',
-            [
-                'summary_ym' => (string)$request->summary_ym,
-                'updatedPayment' => $insertedPaymentArray,
-                'members' => $memberHistoryArray,
-                'memberCategories' => $memberCategoryHistoryArray,
-                'payments' => $paymentArray,
-            ]
+        Session::put('updatedPayment', $insertedPaymentArray);
+        return redirect()->route(
+            'payments.editPayments',
+            ['summary_ym' => (string)$request->summary_ym]
         );
     }
 
@@ -200,10 +192,10 @@ class PaymentController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Payment  $payment
-     * @return \Illuminate\Http\RedirectResponse
+     * @param Payment $payment
+     * @return RedirectResponse
      */
-    public function show(Payment $payment)
+    public function show(Payment $payment): RedirectResponse
     {
         return redirect()->route('payments.editPayments', ['summary_ym' => $payment->summary_ym]);
     }
@@ -214,7 +206,7 @@ class PaymentController extends Controller
      * @param  string  $summary_ym
      * @return Response
      */
-    public function showSummary(string $summary_ym)
+    public function showSummary(string $summary_ym): Response
     {
         $memberHistory = $this->getArrayMemberHistories(
             $this->paymentService->getMemberHistoriesInGroup($summary_ym)
@@ -306,10 +298,10 @@ class PaymentController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Payment  $payment
+     * @param Payment $payment
      * @return \Illuminate\Http\Response
      */
-    public function edit(Payment $payment)
+    public function edit(Payment $payment): \Illuminate\Http\Response
     {
         //
     }
@@ -317,7 +309,7 @@ class PaymentController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  string  $summary_ym
+     * @param string $summary_ym
      * @return Response
      */
     public function editPayments(string $summary_ym): Response
@@ -327,13 +319,17 @@ class PaymentController extends Controller
         $memberCategoryHistoryArray = $this->getArrayMemberCategoryHistories($paymentsAndRelatedDataForEdit->getMemberCategoryHistories());
         $paymentArray = $this->getArrayPaymentsForEdit($paymentsAndRelatedDataForEdit->getPayments());
 
+        $updatedPaymentArray = Session::get('updatedPayment');
+        Session::forget('updatedPayment');
+
         return Inertia::render(
             'Payments/edit',
             [
                 'summary_ym' => $summary_ym,
                 'members' => $memberHistoryArray,
                 'memberCategories' => $memberCategoryHistoryArray,
-                'payments' => $paymentArray
+                'payments' => $paymentArray,
+                'updatedPayment' => $updatedPaymentArray
             ]
         );
     }
@@ -341,11 +337,11 @@ class PaymentController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdatePaymentRequest  $request
-     * @param  \App\Models\Payment  $payment
-     * @return Response
+     * @param UpdatePaymentRequest $request
+     * @param Payment $payment
+     * @return RedirectResponse
      */
-    public function update(UpdatePaymentRequest $request, Payment $payment): Response
+    public function update(UpdatePaymentRequest $request, Payment $payment): RedirectResponse
     {
         $payment->payment_date = $request->payment_date;
         $payment->amount = $request->amount;
@@ -353,20 +349,10 @@ class PaymentController extends Controller
         $paymentDTO = $this->paymentService->updatePayment($this->setPaymentFromModelToDTO($payment));
         $updatedPaymentArray = $this->getArrayPayment($paymentDTO);
 
-        $paymentsAndRelatedDataForEdit = $this->paymentService->getPaymentsAndRelatedDataForEdit($paymentDTO->getSummaryYm(), $paymentDTO->getGroupId());
-        $memberHistoryArray = $this->getArrayMemberHistories($paymentsAndRelatedDataForEdit->getMemberHistories());
-        $memberCategoryHistoryArray = $this->getArrayMemberCategoryHistories($paymentsAndRelatedDataForEdit->getMemberCategoryHistories());
-        $paymentArray = $this->getArrayPaymentsForEdit($paymentsAndRelatedDataForEdit->getPayments());
-
-        return Inertia::render(
-            'Payments/edit',
-            [
-                'summary_ym' => (string)$payment->summary_ym,
-                'members' => $memberHistoryArray,
-                'memberCategories' => $memberCategoryHistoryArray,
-                'payments' => $paymentArray,
-                'updatedPayment' => $updatedPaymentArray,
-            ]
+        Session::put('updatedPayment', $updatedPaymentArray);
+        return redirect()->route(
+            'payments.editPayments',
+            ['summary_ym' => (string)$payment->summary_ym]
         );
     }
 
@@ -392,10 +378,10 @@ class PaymentController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Payment  $payment
-     * @return \Illuminate\Http\Response
+     * @param Payment $payment
+     * @return Response
      */
-    public function destroy(Payment $payment)
+    public function destroy(Payment $payment): Response
     {
         $paymentDTO = $this->paymentService->deletePayment($this->setPaymentFromModelToDTO($payment));
         $deletedPaymentArray = $this->getArrayPayment($paymentDTO);
@@ -417,7 +403,7 @@ class PaymentController extends Controller
         );
     }
 
-    public function destroyRelatedPayments(string $summary_ym): \Illuminate\Http\RedirectResponse
+    public function destroyRelatedPayments(string $summary_ym): RedirectResponse
     {
         $this->paymentService->deleteMonthlyPayments($summary_ym);
         return redirect()->route('payments.index');
