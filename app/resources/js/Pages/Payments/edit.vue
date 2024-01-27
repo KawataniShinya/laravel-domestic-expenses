@@ -1,7 +1,8 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import {Head, Link, useForm} from '@inertiajs/vue3';
-import {onBeforeMount, onBeforeUpdate, onUpdated, ref} from 'vue';
+import {onBeforeMount, onBeforeUpdate, onUpdated, ref, watchEffect} from 'vue';
+import InputError from '@/Components/InputError.vue';
 
 const props = defineProps({
     'summary_ym' : String,
@@ -107,6 +108,7 @@ const initBeforeRendering = () => {
 
     setMemberTabId(memberList.value[0].member_id)
     setCategoryTabId(Object.entries(memberCategoryList[memberList.value[0].member_id])[0][0])
+    resetErrors()
     IDdropdownOperator.value = ''
 }
 
@@ -123,9 +125,41 @@ onUpdated(() => {
     if (props.updatedPayment !== null) {
         setMemberTabId(props.updatedPayment.member_id)
         setCategoryTabId(props.updatedPayment.category_id)
+        resetErrors()
         setTimeout(forcusNewLineAmount, 0)
     }
 })
+
+const insertFormErrorsRef = ref(null);
+const updateFormErrorsRef = ref(null);
+watchEffect(() => {
+    const insertFormErrors = JSON.stringify(insertForm.errors);
+    const updateFormErrors = JSON.stringify(updateForm.errors);
+
+    if (insertFormErrors !== insertFormErrorsRef.value) {
+        if (insertFormErrorsRef.value !== null) {
+            setMemberTabId(insertForm.member_id)
+            setCategoryTabId(insertForm.category_id)
+            newLinePayment.amount = insertForm.amount
+            newLinePayment.payment_date = insertForm.payment_date
+            newLinePayment.payment_label = insertForm.payment_label
+            document.querySelector("#" + newLineAmountPrefix + '_' + insertForm.member_id + '_' + insertForm.category_id + '_0_' + paymentItemTitle.indexOf('金額')).focus()
+        }
+        insertFormErrorsRef.value = insertFormErrors;
+    }
+
+    if (updateFormErrors !== updateFormErrorsRef.value) {
+        if (updateFormErrorsRef.value !== null) {
+            let paymentDetail = getDetailByPaymentId(updateForm.payment_id)
+            setMemberTabId(paymentDetail.memberId)
+            setCategoryTabId(paymentDetail.categoryId)
+            paymentList[paymentDetail.memberId][paymentDetail.categoryId][paymentDetail.categorizedPaymentId].amount = updateForm.amount
+            paymentList[paymentDetail.memberId][paymentDetail.categoryId][paymentDetail.categorizedPaymentId].payment_date = updateForm.payment_date
+            paymentList[paymentDetail.memberId][paymentDetail.categoryId][paymentDetail.categorizedPaymentId].payment_label = updateForm.payment_label
+        }
+        updateFormErrorsRef.value = updateFormErrors;
+    }
+});
 
 const paymentItemTitle = ['行番号(明細番号)', '金額', '日付', '名目', '操作']
 const itemPrefixForQuerySelector = "item"
@@ -280,6 +314,10 @@ const setCategoryTabId = arg => {
     newLinePayment.payment_date = ''
     newLinePayment.payment_label = ''
 }
+const resetErrors = () => {
+    insertForm.errors = {}
+    updateForm.errors = {}
+}
 
 const getNewPayment = propertyName => {
     return newLinePayment[propertyName]
@@ -305,6 +343,39 @@ const submitDeletePayment = (memberId, categoryId, rowPayment) => {
                 + '行番号 : ' + rowPayment)
         }
     )
+}
+
+const getDetailByPaymentId = (paymentId) => {
+    let returnMemberId = 0
+    let returnCategory = 0
+    let returnCategorizedPaymentId = 0
+    let returnRowNum = 0
+    for (const memberId in paymentList) {
+        returnMemberId = memberId
+        returnCategory = 0
+        for (const categoryId in paymentList[memberId]) {
+            returnCategory = categoryId
+            returnCategorizedPaymentId = 0
+            returnRowNum = 0
+            for (const categorizedPaymentId in paymentList[memberId][categoryId]) {
+                returnCategorizedPaymentId = categorizedPaymentId
+                returnRowNum++;
+                if (paymentList[memberId][categoryId][categorizedPaymentId].payment_id === paymentId) {
+                    return {
+                        "memberId": returnMemberId,
+                        "categoryId" : returnCategory,
+                        "categorizedPaymentId" : returnCategorizedPaymentId,
+                        "rowPayment" : returnRowNum,
+                    };
+                }
+            }
+        }
+    }
+    return {}
+}
+
+const getRowPaymentByPaymentId = (paymentId) => {
+    return getDetailByPaymentId(paymentId).rowPayment
 }
 </script>
 
@@ -383,7 +454,7 @@ const submitDeletePayment = (memberId, categoryId, rowPayment) => {
                                     <nav class="flex flex-col sm:flex-row">
                                         <button
                                             v-for="(category, categoryKey) in memberCategoryList[memberTabId]"
-                                            @click="setCategoryTabId(categoryKey)"
+                                            @click="setCategoryTabId(categoryKey);resetErrors()"
                                             v-bind:class="{'text-blue-500 border-b-2 font-medium border-blue-500': categoryTabId === String(categoryKey)}"
                                             class="text-gray-600 py-4 px-6 block hover:text-blue-500 focus:outline-none"
                                         >
@@ -392,6 +463,8 @@ const submitDeletePayment = (memberId, categoryId, rowPayment) => {
                                     </nav>
                                 </div>
 
+                                <InputError class="mt-2" v-for="(error, key) in updateForm.errors" :key="key" :message="getRowPaymentByPaymentId(updateForm.payment_id)+'行目 : '+error" />
+                                <InputError class="mt-2" v-for="(error, key) in insertForm.errors" :key="key" :message="'新規追加 : '+error" />
                                 <div v-for="(member, memberKey) in memberList">
                                     <div v-for="(category, categoryKey) in memberCategoryList[member.member_id]" class="flex justify-center">
                                         <table
@@ -607,7 +680,7 @@ const submitDeletePayment = (memberId, categoryId, rowPayment) => {
                                                     >
                                                         <div
                                                             v-if="item === '行番号(明細番号)'"
-                                                            v-bind:id="newLineAmountPrefix + '_' + member.member_id + '_' + categoryKey + '_0_' + paymentItemTitle.indexOf('明細番号')"
+                                                            v-bind:id="newLineAmountPrefix + '_' + member.member_id + '_' + categoryKey + '_0_' + paymentItemTitle.indexOf('行番号(明細番号)')"
                                                         >
                                                             {{ newLineTitle }}
                                                         </div>
