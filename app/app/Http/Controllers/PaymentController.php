@@ -225,7 +225,11 @@ class PaymentController extends Controller
         );
 
         $expenseByMemberLastMonth = $this->getArrayPaymentTotalByMember(
-            $this->paymentService->getExpenseTotalByMemberLastMonth($summary_ym)
+            $this->paymentService->getExpenseTotalByMemberPastMonth($summary_ym, 1)
+        );
+
+        $expenseByMember2MonthAgo = $this->getArrayPaymentTotalByMember(
+            $this->paymentService->getExpenseTotalByMemberPastMonth($summary_ym, 2)
         );
 
         return Inertia::render(
@@ -236,7 +240,8 @@ class PaymentController extends Controller
                 'categories' => $memberCategoryHistory,
                 'paymentsIncome' => $paymentSummaryIncome,
                 'paymentsExpense' => $paymentSummaryExpense,
-                'paymentExpenseByMemberLastMonth' => $expenseByMemberLastMonth
+                'paymentExpenseByMemberLastMonth' => $expenseByMemberLastMonth,
+                'paymentExpenseByMember2MonthAgo' => $expenseByMember2MonthAgo,
             ]
         );
     }

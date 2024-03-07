@@ -47,9 +47,10 @@ interface PaymentService
 
     /**
      * @param int $summaryYm
+     * @param int $backMonths
      * @return array<PaymentTotalByMember>
      */
-    public function getExpenseTotalByMemberLastMonth(int $summaryYm): array;
+    public function getExpenseTotalByMemberPastMonth(int $summaryYm, int $backMonths): array;
 
     public function getOrCreateMemberAndCategoryHistoryWithPayments(int $summaryYm): PaymentsAndRelatedDataForEdit;
 
