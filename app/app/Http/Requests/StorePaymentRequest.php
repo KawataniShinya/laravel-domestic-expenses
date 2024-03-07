@@ -27,7 +27,6 @@ class StorePaymentRequest extends FormRequest
             'amount' => [
                 'required',
                 'integer',
-                'min:0',
             ],
         ];
     }
