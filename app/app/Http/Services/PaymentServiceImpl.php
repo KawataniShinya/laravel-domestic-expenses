@@ -96,20 +96,20 @@ class PaymentServiceImpl implements PaymentService
         return $paymentSummaryExpense;
     }
 
-    public function getExpenseTotalByMemberLastMonth(int $summaryYm): array
+    public function getExpenseTotalByMemberPastMonth(int $summaryYm, int $backMonths): array
     {
         $authMember = $this->memberRepository->selectMemberByAuth();
-        $lastMonth = $this->getLastMonth($summaryYm);
+        $lastMonth = $this->getPastMonth($summaryYm, $backMonths);
         $expenseByMemberLastMonth = $this->paymentRepository->selectPaymentTotalByMember($authMember->getGroupId(), $lastMonth, false);
 
         return $expenseByMemberLastMonth;
     }
 
-    private function getLastMonth(int $yyyymm)
+    private function getPastMonth(int $yyyymm, int $backMonths): string
     {
         $currentYear = substr($yyyymm, 0, 4);
         $currentMonth = substr($yyyymm, 4, 2);
-        $lastMonthTime = strtotime($currentYear . '-' . $currentMonth . '-01 -1 month');
+        $lastMonthTime = strtotime($currentYear . '-' . $currentMonth . '-01 -' . $backMonths . ' month');
         return date('Ym', $lastMonthTime);
     }
 

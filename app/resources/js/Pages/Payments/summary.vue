@@ -11,7 +11,8 @@ const props = defineProps({
     'categories' : Array,
     'paymentsIncome' : Array,
     'paymentsExpense' : Array,
-    'paymentExpenseByMemberLastMonth' : Array
+    'paymentExpenseByMemberLastMonth' : Array,
+    'paymentExpenseByMember2MonthAgo' : Array,
 })
 
 onMounted(() => {
@@ -54,9 +55,13 @@ onMounted(() => {
             amount: expense.amount
         })
     })
-    // メンバー別先月支出額
-    props.paymentExpenseByMemberLastMonth.forEach(expenseLast => {
-        expenseLastList.value.push(expenseLast.amount)
+
+    // メンバー別過去支出額
+    props.paymentExpenseByMemberLastMonth.forEach(expensePast => {
+        expenseLastList.value.push(expensePast.amount)
+    })
+    props.paymentExpenseByMember2MonthAgo.forEach(expensePast => {
+        expense2MonthsAgoList.value.push(expensePast.amount)
     })
 
     // 収入テーブルへの2次元配列マッピング
@@ -90,6 +95,7 @@ const categoryExpenseIndexArray = ref([])
 const incomeTotalList = ref([])
 const expenseTotalList = ref([])
 const expenseLastList = ref([])
+const expense2MonthsAgoList = ref([])
 let paymentsIncomeArray = ref()
 let sumPaymentIncome = ref(0)
 let paymentsExpenseArray = ref()
@@ -192,6 +198,13 @@ const deletePaymentsRelatedHistory = () => {
                                             <th class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-yellow-200">(収入-先月支出)</th>
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-yellow-200" v-for="(member, memberIndex) in memberList" :key="memberList.member_id">
                                                 {{ separateCommaOrBlank(sumVertical(paymentsIncomeArray, memberIndex) - expenseLastList[memberIndex]) }}
+                                            </td>
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-yellow-200"></td>
+                                        </tr>
+                                        <tr>
+                                            <th class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-yellow-200">(収入-先々月支出)</th>
+                                            <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-yellow-200" v-for="(member, memberIndex) in memberList" :key="memberList.member_id">
+                                                {{ separateCommaOrBlank(sumVertical(paymentsIncomeArray, memberIndex) - expense2MonthsAgoList[memberIndex]) }}
                                             </td>
                                             <td class="border-t-2 border-b-2 border-gray-200 px-4 py-3 text-end bg-yellow-200"></td>
                                         </tr>
